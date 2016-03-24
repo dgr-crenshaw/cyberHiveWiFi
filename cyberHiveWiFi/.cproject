@@ -28,6 +28,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cyberHiveWiFi/Libraries/ESP8266WiFi/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cyberHiveWiFi/Libraries/ESP8266HTTPClient}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cyberHiveWiFi/Libraries/ESP8266HTTPClient/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cyberHiveWiFi/Libraries/Adafruit_MQTT_Library}&quot;"/>
 								</option>
 								<inputType id="it.baeyens.arduino.compiler.cpp.sketch.input.1293553276" name="CPP source files" superClass="it.baeyens.arduino.compiler.cpp.sketch.input"/>
 							</tool>
@@ -42,6 +43,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cyberHiveWiFi/Libraries/ESP8266WiFi/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cyberHiveWiFi/Libraries/ESP8266HTTPClient}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cyberHiveWiFi/Libraries/ESP8266HTTPClient/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cyberHiveWiFi/Libraries/Adafruit_MQTT_Library}&quot;"/>
 								</option>
 								<inputType id="it.baeyens.arduino.compiler.c.sketch.input.1734916398" name="C Source Files" superClass="it.baeyens.arduino.compiler.c.sketch.input"/>
 							</tool>

@@ -1,133 +1,156 @@
-/* WeMos DHT Server
- *
- * Connect to WiFi and respond to http requests with temperature and humidity
- *
- * Based on Adafruit ESP8266 Temperature / Humidity Webserver
- * https://learn.adafruit.com/esp8266-temperature-slash-humidity-webserver
- *
- * Depends on Adafruit DHT Arduino library
- * https://github.com/adafruit/DHT-sensor-library
- */
+/***************************************************
+  Adafruit ESP8266 Sensor Module
 
+  Must use ESP8266 Arduino from:
+    https://github.com/esp8266/Arduino
+  Works great with Adafruit's Huzzah ESP board:
+  ----> https://www.adafruit.com/product/2471
+  Adafruit invests time and resources providing this open source code,
+  please support Adafruit and open-source hardware by purchasing
+  products from Adafruit!
+  Written by Tony DiCola for Adafruit Industries.
+  MIT license, all text above must be included in any redistribution
+ ****************************************************/
+
+// Libraries
 #include <ESP8266WiFi.h>
-#include <WiFiClient.h>
-#include <ESP8266WebServer.h>
-#include <DHT.h>
+#include "Adafruit_MQTT.h"
+#include "Adafruit_MQTT_Client.h"
+#include "DHT.h"
 
-#define DHTTYPE DHT22   // DHT Shield uses DHT 22
-#define DHTPIN D4       // DHT Shield uses pin D4
+// DHT 11 sensor
+#define DHTPIN 4 //WeMos DHT22 shield hardwired pin
+#define DHTTYPE DHT22
 
-// Existing WiFi network
-const char* ssid     = "NETGEAR75";
-const char* password = "greenstar582";
+// WiFi parameters
+#define WLAN_SSID       "NETGEAR75"
+#define WLAN_PASS       "greenstar582"
 
-// Listen for HTTP requests on standard port 80
-ESP8266WebServer server(80);
+// Adafruit IO
+#define AIO_SERVER      "io.adafruit.com"
+#define AIO_SERVERPORT  1883
+#define AIO_USERNAME    "dgrc"
+#define AIO_KEY         "d07a294b8495727687c45fa4f2314ae91fd3fac6"
 
-// Initialize DHT sensor
-// Note that older versions of this library took an optional third parameter to
-// tweak the timings for faster processors.  This parameter is no longer needed
-// as the current DHT reading algorithm adjusts itself to work on faster procs.
+// DHT sensor
+//what does the third parm do? DHT dht(DHTPIN, DHTTYPE, 15);
 DHT dht(DHTPIN, DHTTYPE);
 
-float humidity, temperature;                 // Raw float values from the sensor
-char str_humidity[10], str_temperature[10];  // Rounded sensor values and as strings
-// Generally, you should use "unsigned long" for variables that hold time
-unsigned long previousMillis = 0;            // When the sensor was last read
-const long interval = 2000;                  // Wait this long until reading again
+// Functions
+void connect();
 
-void handle_root() {
-  server.send(200, "text/plain", "WeMos DHT Server. Get /temp or /humidity");
-  delay(100);
-}
+// Create an ESP8266 WiFiClient class to connect to the MQTT server.
+WiFiClient client;
 
-void read_sensor() {
-  // Wait at least 2 seconds seconds between measurements.
-  // If the difference between the current time and last time you read
-  // the sensor is bigger than the interval you set, read the sensor.
-  // Works better than delay for things happening elsewhere also.
-  unsigned long currentMillis = millis();
+// Store the MQTT server, client ID, username, and password in flash memory.
+const char MQTT_SERVER[] PROGMEM    = AIO_SERVER;
 
-  if (currentMillis - previousMillis >= interval) {
-    // Save the last time you read the sensor
-    previousMillis = currentMillis;
+// Set a unique MQTT client ID using the AIO key + the date and time the sketch
+// was compiled (so this should be unique across multiple devices for a user,
+// alternatively you can manually set this to a GUID or other random value).
+const char MQTT_CLIENTID[] PROGMEM  = AIO_KEY __DATE__ __TIME__;
+const char MQTT_USERNAME[] PROGMEM  = AIO_USERNAME;
+const char MQTT_PASSWORD[] PROGMEM  = AIO_KEY;
 
-    // Reading temperature and humidity takes about 250 milliseconds!
-    // Sensor readings may also be up to 2 seconds 'old' (it's a very slow sensor)
-    humidity = dht.readHumidity();        // Read humidity as a percent
-    temperature = dht.readTemperature(true);  // Read temperature as Fahrenheit
+// Setup the MQTT client class by passing in the WiFi client and MQTT server and login details.
+Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, AIO_SERVERPORT, MQTT_CLIENTID, MQTT_USERNAME, MQTT_PASSWORD);/****************************** Feeds ***************************************/
 
-    // Check if any reads failed and exit early ue(to try again).
-    if (isnan(humidity) || isnan(temperature)) {
-      Serial.println("Failed to read from DHT sensor!");
-      return;
-    }
+// Setup feeds for temperature & humidity
+const char TEMPERATURE_FEED[] PROGMEM = AIO_USERNAME "/feeds/temperature";
+Adafruit_MQTT_Publish temperature = Adafruit_MQTT_Publish(&mqtt, TEMPERATURE_FEED);
 
-    // Convert the floats to strings and round to 2 decimal places
-    dtostrf(humidity, 1, 2, str_humidity);
-    dtostrf(temperature, 1, 2, str_temperature);
+const char HUMIDITY_FEED[] PROGMEM = AIO_USERNAME "/feeds/humidity";
+Adafruit_MQTT_Publish humidity = Adafruit_MQTT_Publish(&mqtt, HUMIDITY_FEED);
 
-    Serial.print("Humidity: ");
-    Serial.print(str_humidity);
-    Serial.print(" %\t");
-    Serial.print("Temperature: ");
-    Serial.print(str_temperature);
-    Serial.println(" *F");
-  }
-}
+/*************************** Sketch Code ************************************/
 
-void setup(void)
-{
-  // Open the Arduino IDE Serial Monitor to see what the code is doing
-  Serial.begin(9600);
+void setup() {
+
+  // Init sensor
   dht.begin();
 
-  Serial.println("WeMos DHT Server -- eclipse build 03/24/2016");
-  Serial.println("");
+  Serial.begin(115200);
+  Serial.println(F("Adafruit IO Example"));
 
-  // Connect to your WiFi network
-  WiFi.begin(ssid, password);
-  Serial.print("Connecting");
+  // Connect to WiFi access point.
+  Serial.println(); Serial.println();
+  delay(10);
+  Serial.print(F("Connecting to "));
+  Serial.println(WLAN_SSID);
 
-  // Wait for successful connection
+  WiFi.begin(WLAN_SSID, WLAN_PASS);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    Serial.print(".");
+    Serial.print(F("."));
   }
-  Serial.println("");
-  Serial.print("Connected to: ");
-  Serial.println(ssid);
-  Serial.print("IP address: ");
+  Serial.println();
+
+  Serial.println(F("WiFi connected"));
+  Serial.println(F("IP address: "));
   Serial.println(WiFi.localIP());
-  Serial.println("");
 
-  // Initial read
-  read_sensor();
+  // connect to adafruit io
+  connect();
 
-  // Handle http requests
-  server.on("/", handle_root);
-
-  server.on("/temp", [](){
-    read_sensor();
-    char response[50];
-    snprintf(response, 50, "Temperature: %s *F", str_temperature);
-    server.send(200, "text/plain", response);
-  });
-
-  server.on("/humidity", [](){
-    read_sensor();
-    char response[50];
-    snprintf(response, 50, "Humidity: %s %", str_humidity);
-    server.send(200, "text/plain", response);
-  });
-
-  // Start the web server
-  server.begin();
-  Serial.println("HTTP server started");
 }
 
-void loop(void)
-{
-  // Listen for http requests
-  server.handleClient();
+void loop() {
+
+  // ping adafruit io a few times to make sure we remain connected
+  if(! mqtt.ping(3)) {
+    // reconnect to adafruit io
+    if(! mqtt.connected())
+      connect();
+  }
+
+  // Grab the current state of the sensor
+  int humidity_data = int(dht.readHumidity());
+  int temperature_data = int(dht.readTemperature());
+
+  // Publish data
+  if (! temperature.publish(temperature_data))
+    Serial.println(F("Failed to publish temperature"));
+  else
+    Serial.println(F("Temperature published!"));
+
+  if (! humidity.publish(humidity_data))
+    Serial.println(F("Failed to publish humidity"));
+  else
+    Serial.println(F("Humidity published!"));
+  Serial.println(humidity_data);
+
+  // Repeat every 10 seconds
+  delay(10000);
+
+}
+
+// connect to adafruit io via MQTT
+void connect() {
+
+  Serial.print(F("Connecting to Adafruit IO... "));
+
+  int8_t ret;
+
+  while ((ret = mqtt.connect()) != 0) {
+
+    switch (ret) {
+      case 1: Serial.println(F("Wrong protocol")); break;
+      case 2: Serial.println(F("ID rejected")); break;
+      case 3: Serial.println(F("Server unavail")); break;
+      case 4: Serial.println(F("Bad user/pass")); break;
+      case 5: Serial.println(F("Not authed")); break;
+      case 6: Serial.println(F("Failed to subscribe")); break;
+      default: Serial.println(F("Connection failed")); break;
+    }
+
+    if(ret >= 0)
+      mqtt.disconnect();
+
+    Serial.println(F("Retrying connection..."));
+    delay(5000);
+
+  }
+
+  Serial.println(F("Adafruit IO Connected!"));
+
 }

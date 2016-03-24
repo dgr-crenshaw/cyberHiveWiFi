@@ -27,6 +27,11 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>Libraries/Adafruit_MQTT_Library</name>
+			<type>2</type>
+			<locationURI>ArduinoPrivateLibPath/Adafruit_MQTT_Library</locationURI>
+		</link>
+		<link>
 			<name>Libraries/DHT</name>
 			<type>2</type>
 			<locationURI>ArduinoPrivateLibPath/DHT</locationURI>
