@@ -104,8 +104,8 @@ void loop() {
   }
 
   // Grab the current state of the sensor
-  int humidity_data = int(dht.readHumidity());
-  int temperature_data = int(dht.readTemperature());
+  int humidity_data = int()dht.readHumidity();
+  int temperature_data = int()dht.readTemperature();
 
   // Publish data
   if (! temperature.publish(temperature_data))
