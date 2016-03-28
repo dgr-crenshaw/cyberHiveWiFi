@@ -28,6 +28,7 @@
  /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/cores/esp8266/md5.h \
  /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/cores/esp8266/debug.h \
  /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/variants/d1_mini/pins_arduino.h \
+ /home/dgrc/arduinoLibraries/DHT/DHT.h \
  /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/libraries/ESP8266WiFi/src/ESP8266WiFi.h \
  /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/libraries/ESP8266WiFi/src/include/wl_definitions.h \
  /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/cores/esp8266/IPAddress.h \
@@ -51,7 +52,7 @@
  /home/dgrc/arduinoLibraries/Adafruit_MQTT_Library/Adafruit_MQTT.h \
  /home/dgrc/arduinoLibraries/Adafruit_MQTT_Library/Adafruit_MQTT_Client.h \
  /home/dgrc/arduinoLibraries/Adafruit_MQTT_Library/Adafruit_MQTT.h \
- /home/dgrc/arduinoLibraries/DHT/DHT.h ../cyberHiveWiFi.ino
+ ../cyberHiveWiFi.ino
 
 /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/cores/esp8266/Arduino.h:
 
@@ -111,6 +112,8 @@
 
 /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/variants/d1_mini/pins_arduino.h:
 
+/home/dgrc/arduinoLibraries/DHT/DHT.h:
+
 /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/libraries/ESP8266WiFi/src/ESP8266WiFi.h:
 
 /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/libraries/ESP8266WiFi/src/include/wl_definitions.h:
@@ -156,7 +159,5 @@
 /home/dgrc/arduinoLibraries/Adafruit_MQTT_Library/Adafruit_MQTT_Client.h:
 
 /home/dgrc/arduinoLibraries/Adafruit_MQTT_Library/Adafruit_MQTT.h:
-
-/home/dgrc/arduinoLibraries/DHT/DHT.h:
 
 ../cyberHiveWiFi.ino:

@@ -247,10 +247,10 @@ environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.EXTRA.
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.EXTRA.TIME.DTS/value=3600
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.EXTRA.TIME.LOCAL/delimiter=\:
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.EXTRA.TIME.LOCAL/operation=replace
-environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.EXTRA.TIME.LOCAL/value=1458822123
+environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.EXTRA.TIME.LOCAL/value=1459178374
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.EXTRA.TIME.UTC/delimiter=\:
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.EXTRA.TIME.UTC/operation=replace
-environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.EXTRA.TIME.UTC/value=1458840123
+environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.EXTRA.TIME.UTC/value=1459196374
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.EXTRA.TIME.ZONE/delimiter=\:
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.EXTRA.TIME.ZONE/operation=replace
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.EXTRA.TIME.ZONE/value=-21600
@@ -619,7 +619,7 @@ environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.UPLOAD
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.UPLOAD.RESETMETHOD/value=nodemcu
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.UPLOAD.SPEED/delimiter=\:
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.UPLOAD.SPEED/operation=replace
-environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.UPLOAD.SPEED/value=115200
+environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.UPLOAD.SPEED/value=460800
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.UPLOAD.TOOL/delimiter=\:
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.UPLOAD.TOOL/operation=replace
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/A.UPLOAD.TOOL/value=esptool
@@ -655,7 +655,7 @@ environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.B
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.BUILD_VARIANT/value=d1_mini
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.COM_PORT/delimiter=\:
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.COM_PORT/operation=replace
-environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.COM_PORT/value=/dev/ttyUSB0
+environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.COM_PORT/value=/dev/ttyUSB1
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.COM_PROGMR/delimiter=\:
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.COM_PROGMR/operation=replace
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.COM_PROGMR/value=Default
@@ -668,6 +668,15 @@ environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.D
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.Debug\ port/delimiter=\:
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.Debug\ port/operation=replace
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.Debug\ port/value=
+environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.EXTRA.C.COMPILE/delimiter=\:
+environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.EXTRA.C.COMPILE/operation=replace
+environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.EXTRA.C.COMPILE/value=
+environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.EXTRA.COMPILE/delimiter=\:
+environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.EXTRA.COMPILE/operation=replace
+environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.EXTRA.COMPILE/value=
+environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.EXTRA.CPP.COMPILE/delimiter=\:
+environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.EXTRA.CPP.COMPILE/operation=replace
+environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.EXTRA.CPP.COMPILE/value=
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.Flash\ Frequency/delimiter=\:
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.Flash\ Frequency/operation=replace
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.Flash\ Frequency/value=
@@ -703,7 +712,7 @@ environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.S
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.SIZE_COMMAND/value="${A.COMPILER.PATH}${A.COMPILER.SIZE.CMD}" --format\=avr --mcu\=${A.BUILD.MCU} "${A.BUILD.PATH}/${A.BUILD.PROJECT_NAME}.elf"
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.Upload\ Speed/delimiter=\:
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.Upload\ Speed/operation=replace
-environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.Upload\ Speed/value=115200
+environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.Upload\ Speed/value=9600
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.Upload\ Using/delimiter=\:
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.Upload\ Using/operation=replace
 environment/project/it.baeyens.arduino.core.toolChain.release.754102892/JANTJE.Upload\ Using/value=Serial
