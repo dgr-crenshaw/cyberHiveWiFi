@@ -23,9 +23,6 @@ DHT dht(DHTPIN, DHTTYPE);
 #define AIO_USERNAME "dgrc"
 #define AIO_KEY "d07a294b8495727687c45fa4f2314ae91fd3fac6"
 
-// MQTT Functions
-void connect();
-
 // Create an ESP8266 WiFiClient class to connect to the MQTT server.
 WiFiClient client;
 
@@ -61,6 +58,68 @@ void setup() {
 	// init sensor
 	dht.begin();
 
+	//connect to WiFi
+	connectWiFi();
+
+	// connect to adafruit_io
+	connectMQTT();
+}
+
+void loop() {
+
+	sendMQTTData();
+
+	/*// Wait 10 seconds between measurements.
+	delay(10000);
+
+	// ping adafruit io a few times to make sure we remain connected
+	if (!mqtt.ping(3)) {
+		// reconnect to adafruit_io
+		if (!mqtt.connected())
+			connectMQTT();
+	}
+
+	// Reading temperature or humidity takes about 250 milliseconds!
+	float humidityRelative = dht.readHumidity();
+	float tempFahrenheit = dht.readTemperature(true);
+	//prepping for power management
+	float batteryRemaining = 50.3;
+
+	// Check if any reads failed and exit early (to try again).
+	if (isnan(
+			humidityRelative) || isnan(tempFahrenheit) || isnan(batteryRemaining)) {
+		Serial.println("Failed to read from DHT sensor!");
+		return;
+	}
+
+	**
+	 Serial.print("Humidity: ");
+	 Serial.print(humidityRelative);
+	 Serial.print(" %\t");
+	 Serial.print(tempFahrenheit);
+	 Serial.print(" *F\t");
+	 **
+
+	// Publish data
+	if (!battery.publish(batteryRemaining)) //prepping for power management
+		Serial.println(F("Failed to publish battery charge"));
+	else
+		Serial.println(F("Battery charge published!"));
+
+	if (!temperature.publish(tempFahrenheit))
+		Serial.println(F("Failed to publish temperature"));
+	else
+		Serial.println(F("Temperature published!"));
+
+	if (!humidity.publish(humidityRelative))
+		Serial.println(F("Failed to publish humidity"));
+	else
+		Serial.println(F("Humidity published!"));
+	Serial.println(humidityRelative);
+*/
+}
+
+void connectWiFi() {
 	// Connect to WiFi access point.
 	Serial.println();
 	Serial.println();
@@ -79,63 +138,10 @@ void setup() {
 	Serial.println(F("IP address: "));
 	Serial.println(WiFi.localIP());
 
-	// connect to adafruit_io
-	connect();
-}
-
-void loop() {
-	// Wait 10 seconds between measurements.
-	delay(10000);
-
-	// ping adafruit io a few times to make sure we remain connected
-	if (!mqtt.ping(3)) {
-		// reconnect to adafruit_io
-		if (!mqtt.connected())
-			connect();
-	}
-
-	// Reading temperature or humidity takes about 250 milliseconds!
-	float humidityRelative = dht.readHumidity();
-	float tempFahrenheit = dht.readTemperature(true);
-	//prepping for power management
-	float batteryRemaining = 50.0;
-
-	// Check if any reads failed and exit early (to try again).
-	if (isnan(
-			humidityRelative) || isnan(tempFahrenheit) || isnan(batteryRemaining)) {
-		Serial.println("Failed to read from DHT sensor!");
-		return;
-	}
-
-	/***
-	 Serial.print("Humidity: ");
-	 Serial.print(humidityRelative);
-	 Serial.print(" %\t");
-	 Serial.print(tempFahrenheit);
-	 Serial.print(" *F\t");
-	 ***/
-
-	// Publish data
-	if (!battery.publish(batteryRemaining)) //prepping for power management
-		Serial.println(F("Failed to publish battery charge"));
-	else
-		Serial.println(F("Battery charge published!"));
-
-	if (!temperature.publish(tempFahrenheit))
-		Serial.println(F("Failed to publish temperature"));
-	else
-		Serial.println(F("Temperature published!"));
-
-	if (!humidity.publish(humidityRelative))
-		Serial.println(F("Failed to publish humidity"));
-	else
-		Serial.println(F("Humidity published!"));
-	Serial.println(humidityRelative);
-
 }
 
 // connect to adafruit_io via MQTT
-void connect() {
+void connectMQTT() {
 
 	Serial.print(F("Connecting to Adafruit IO... "));
 	int8_t ret;
@@ -172,4 +178,55 @@ void connect() {
 	}
 
 	Serial.println(F("Adafruit IO Connected!"));
+}
+
+int sendMQTTData (){
+	// Wait 10 seconds between measurements.
+		delay(10000);
+
+		// ping adafruit io a few times to make sure we remain connected
+		if (!mqtt.ping(3)) {
+			// reconnect to adafruit_io
+			if (!mqtt.connected())
+				connectMQTT();
+		}
+
+		// Reading temperature or humidity takes about 250 milliseconds!
+		float humidityRelative = dht.readHumidity();
+		float tempFahrenheit = dht.readTemperature(true);
+		//prepping for power management
+		float batteryRemaining = 50.4;
+
+		// Check if any reads failed and exit early (to try again).
+		if (isnan(
+				humidityRelative) || isnan(tempFahrenheit) || isnan(batteryRemaining)) {
+			Serial.println("Failed to read from DHT sensor!");
+			return 0;
+		}
+		else{
+		/***
+		 Serial.print("Humidity: ");
+		 Serial.print(humidityRelative);
+		 Serial.print(" %\t");
+		 Serial.print(tempFahrenheit);
+		 Serial.print(" *F\t");
+		 ***/
+
+		// Publish da
+		if (!battery.publish(batteryRemaining)) //prepping for power management
+			Serial.println(F("Failed to publish battery charge"));
+		else
+			Serial.println(F("Battery charge published!"));
+
+		if (!temperature.publish(tempFahrenheit))
+			Serial.println(F("Failed to publish temperature"));
+		else
+			Serial.println(F("Temperature published!"));
+
+		if (!humidity.publish(humidityRelative))
+			Serial.println(F("Failed to publish humidity"));
+		else
+			Serial.println(F("Humidity published!"));
+		Serial.println(humidityRelative);
+		return 1;}
 }
