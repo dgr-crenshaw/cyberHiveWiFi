@@ -37,6 +37,11 @@
 			<locationURI>ArduinoPrivateLibPath/DHT</locationURI>
 		</link>
 		<link>
+			<name>Libraries/EEPROM</name>
+			<type>2</type>
+			<locationURI>ArduinoHardwareLibPath/EEPROM</locationURI>
+		</link>
+		<link>
 			<name>Libraries/ESP8266HTTPClient</name>
 			<type>2</type>
 			<locationURI>ArduinoHardwareLibPath/ESP8266HTTPClient</locationURI>

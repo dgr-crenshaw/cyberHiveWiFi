@@ -1,7 +1,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2016-03-28 15:27:10
+//This file has been generated on 2016-03-29 11:20:22
 
 #include "Arduino.h"
 #include "DHT.h"

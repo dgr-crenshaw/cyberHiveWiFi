@@ -1,6 +1,8 @@
 // Example testing sketch for various DHT humidity/temperature sensors
 // Written by ladyada, public domain
-// Modified by dgrc to support MQTT adafruitio dashboard
+// Modified by dgrc to support MQTT adafruit_io dashboard
+
+//TODO pull everything out of loop() and into setup() to support sleep
 
 // DHT 22 sensor parameters
 #include "DHT.h"
@@ -41,13 +43,16 @@ const char MQTT_PASSWORD[] PROGMEM = AIO_KEY;
 Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, AIO_SERVERPORT, MQTT_CLIENTID,
 		MQTT_USERNAME, MQTT_PASSWORD);/****************************** Feeds ***************************************/
 
-// Setup feeds for temperature & humidity
+// Setup feeds for temperature & humidity & battery
 const char TEMPERATURE_FEED[] PROGMEM = AIO_USERNAME "/feeds/temperature";
 Adafruit_MQTT_Publish temperature = Adafruit_MQTT_Publish(&mqtt,
 		TEMPERATURE_FEED);
 
 const char HUMIDITY_FEED[] PROGMEM = AIO_USERNAME "/feeds/humidity";
 Adafruit_MQTT_Publish humidity = Adafruit_MQTT_Publish(&mqtt, HUMIDITY_FEED);
+
+const char BATTERY_FEED[] PROGMEM = AIO_USERNAME "/feeds/battery";
+Adafruit_MQTT_Publish battery = Adafruit_MQTT_Publish(&mqtt, BATTERY_FEED); //prepping for power management
 
 void setup() {
 	//init serial
@@ -74,7 +79,7 @@ void setup() {
 	Serial.println(F("IP address: "));
 	Serial.println(WiFi.localIP());
 
-	// connect to adafruit io
+	// connect to adafruit_io
 	connect();
 }
 
@@ -84,7 +89,7 @@ void loop() {
 
 	// ping adafruit io a few times to make sure we remain connected
 	if (!mqtt.ping(3)) {
-		// reconnect to adafruit io
+		// reconnect to adafruit_io
 		if (!mqtt.connected())
 			connect();
 	}
@@ -92,10 +97,12 @@ void loop() {
 	// Reading temperature or humidity takes about 250 milliseconds!
 	float humidityRelative = dht.readHumidity();
 	float tempFahrenheit = dht.readTemperature(true);
+	//prepping for power management
+	float batteryRemaining = 50.0;
 
 	// Check if any reads failed and exit early (to try again).
-	//if (isnan(humidityRelative) || isnan(tempCelsius) || isnan(tempFahrenheit)) {
-	if (isnan(humidityRelative) || isnan(tempFahrenheit)) {
+	if (isnan(
+			humidityRelative) || isnan(tempFahrenheit) || isnan(batteryRemaining)) {
 		Serial.println("Failed to read from DHT sensor!");
 		return;
 	}
@@ -106,9 +113,14 @@ void loop() {
 	 Serial.print(" %\t");
 	 Serial.print(tempFahrenheit);
 	 Serial.print(" *F\t");
-	***/
+	 ***/
 
 	// Publish data
+	if (!battery.publish(batteryRemaining)) //prepping for power management
+		Serial.println(F("Failed to publish battery charge"));
+	else
+		Serial.println(F("Battery charge published!"));
+
 	if (!temperature.publish(tempFahrenheit))
 		Serial.println(F("Failed to publish temperature"));
 	else
@@ -122,7 +134,7 @@ void loop() {
 
 }
 
-// connect to adafruit io via MQTT
+// connect to adafruit_io via MQTT
 void connect() {
 
 	Serial.print(F("Connecting to Adafruit IO... "));
@@ -137,13 +149,13 @@ void connect() {
 			Serial.println(F("ID rejected"));
 			break;
 		case 3:
-			Serial.println(F("Server unavail"));
+			Serial.println(F("Server unavailable"));
 			break;
 		case 4:
 			Serial.println(F("Bad user/pass"));
 			break;
 		case 5:
-			Serial.println(F("Not authed"));
+			Serial.println(F("Not authorized"));
 			break;
 		case 6:
 			Serial.println(F("Failed to subscribe"));
