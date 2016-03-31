@@ -12,7 +12,6 @@ DHT dht(DHTPIN, DHTTYPE);
 #include "ESP8266WiFi.h"
 #define WLAN_SSID "NETGEAR75"
 #define WLAN_PASS "greenstar582"
-const int sleepTimeSeconds = 60; //for sleep time, number of seconds to sleep
 
 //Adafruit IO MQTT parameters
 #include "Adafruit_MQTT.h"
@@ -50,6 +49,7 @@ Adafruit_MQTT_Publish humidity = Adafruit_MQTT_Publish(&mqtt, HUMIDITY_FEED);
 const char BATTERY_FEED[] PROGMEM = AIO_USERNAME "/feeds/battery";
 Adafruit_MQTT_Publish battery = Adafruit_MQTT_Publish(&mqtt, BATTERY_FEED); //prepping for power management
 
+
 void setup() {
 	//init serial
 	Serial.begin(115200);
@@ -69,6 +69,7 @@ void setup() {
 
 	//go to sleep my little baby
 	// deepSleep time is defined in microseconds. Multiply seconds by 1e6
+	const int sleepTimeSeconds = 3600; //for sleep time, number of seconds to sleep
 	ESP.deepSleep(sleepTimeSeconds * 1000000);
 }
 
@@ -147,11 +148,31 @@ void sendMQTTData() {
 			connectMQTT();
 	}
 
-	// Reading temperature or humidity takes about 250 milliseconds!
+	/*****
+	Reading temperature or humidity takes about 250 milliseconds
+
+	read the battery level from the ESP8266 analog in pin.
+	analog read level is 10 bit 0-1023 (0V-1V).
+
+	our 1M & 220K voltage divider takes the max
+	lipo value of 4.2V and drops it to 0.758V max.
+	this means our min analog read value should be 580 (3.14V)
+	and the max analog read value should be 774 (4.2V).
+
+
+	TODO check voltage of battery pack
+	TODO build voltage divider
+	TODO adjust map() values
+	TODO hook up to A0 pin
+
+	*****/
+
 	float humidityRelative = dht.readHumidity();
 	float tempFahrenheit = dht.readTemperature(true);
 	//prepping for power management
-	float batteryRemaining = 50.6;
+	float batteryRemaining = 50.9;
+	//int batteryRemaining = = analogRead(A0);
+	//batteryRemaining = map(batteryRemaining, 580, 774, 0, 100);
 
 	// Check if any reads failed and exit early (to try again).
 	if (isnan(
@@ -170,10 +191,12 @@ void sendMQTTData() {
 			Serial.println(F("Failed to publish temperature"));
 		else
 			Serial.println(F("Temperature published!"));
+		Serial.println(tempFahrenheit);
 
 		if (!humidity.publish(humidityRelative))
 			Serial.println(F("Failed to publish humidity"));
 		else
 			Serial.println(F("Humidity published!"));
+		Serial.println(humidityRelative);
 	}
 }
