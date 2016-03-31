@@ -2,8 +2,6 @@
 // Written by ladyada, public domain
 // Modified by dgrc to support MQTT adafruit_io dashboard
 
-//TODO pull everything out of loop() and into setup() to support sleep
-
 // DHT 22 sensor parameters
 #include "DHT.h"
 #define DHTPIN D4 //WeMos DHT22 shield hardwired pin
@@ -14,6 +12,7 @@ DHT dht(DHTPIN, DHTTYPE);
 #include "ESP8266WiFi.h"
 #define WLAN_SSID "NETGEAR75"
 #define WLAN_PASS "greenstar582"
+const int sleepTimeSeconds = 60; //for sleep time, number of seconds to sleep
 
 //Adafruit IO MQTT parameters
 #include "Adafruit_MQTT.h"
@@ -24,7 +23,7 @@ DHT dht(DHTPIN, DHTTYPE);
 #define AIO_KEY "d07a294b8495727687c45fa4f2314ae91fd3fac6"
 
 // Create an ESP8266 WiFiClient class to connect to the MQTT server.
-WiFiClient client;
+WiFiClient clientWiFi;
 
 // Store the MQTT server, client ID, username, and password in flash memory.
 const char MQTT_SERVER[] PROGMEM = AIO_SERVER;
@@ -37,7 +36,7 @@ const char MQTT_USERNAME[] PROGMEM = AIO_USERNAME;
 const char MQTT_PASSWORD[] PROGMEM = AIO_KEY;
 
 // Setup the MQTT client class by passing in the WiFi client and MQTT server and login details.
-Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, AIO_SERVERPORT, MQTT_CLIENTID,
+Adafruit_MQTT_Client mqtt(&clientWiFi, MQTT_SERVER, AIO_SERVERPORT, MQTT_CLIENTID,
 		MQTT_USERNAME, MQTT_PASSWORD);/****************************** Feeds ***************************************/
 
 // Setup feeds for temperature & humidity & battery
@@ -61,62 +60,20 @@ void setup() {
 	//connect to WiFi
 	connectWiFi();
 
-	// connect to adafruit_io
+	//connect to adafruit_io
 	connectMQTT();
+
+	Serial.println("Wakey Wakey"); //reset jumped to GPIO 16 = D0
+	sendMQTTData(); //get and publish data
+	Serial.println("Nighty Night");
+
+	//go to sleep my little baby
+	// deepSleep time is defined in microseconds. Multiply seconds by 1e6
+	ESP.deepSleep(sleepTimeSeconds * 1000000);
 }
 
 void loop() {
-
-	sendMQTTData();
-
-	/*// Wait 10 seconds between measurements.
-	delay(10000);
-
-	// ping adafruit io a few times to make sure we remain connected
-	if (!mqtt.ping(3)) {
-		// reconnect to adafruit_io
-		if (!mqtt.connected())
-			connectMQTT();
-	}
-
-	// Reading temperature or humidity takes about 250 milliseconds!
-	float humidityRelative = dht.readHumidity();
-	float tempFahrenheit = dht.readTemperature(true);
-	//prepping for power management
-	float batteryRemaining = 50.3;
-
-	// Check if any reads failed and exit early (to try again).
-	if (isnan(
-			humidityRelative) || isnan(tempFahrenheit) || isnan(batteryRemaining)) {
-		Serial.println("Failed to read from DHT sensor!");
-		return;
-	}
-
-	**
-	 Serial.print("Humidity: ");
-	 Serial.print(humidityRelative);
-	 Serial.print(" %\t");
-	 Serial.print(tempFahrenheit);
-	 Serial.print(" *F\t");
-	 **
-
-	// Publish data
-	if (!battery.publish(batteryRemaining)) //prepping for power management
-		Serial.println(F("Failed to publish battery charge"));
-	else
-		Serial.println(F("Battery charge published!"));
-
-	if (!temperature.publish(tempFahrenheit))
-		Serial.println(F("Failed to publish temperature"));
-	else
-		Serial.println(F("Temperature published!"));
-
-	if (!humidity.publish(humidityRelative))
-		Serial.println(F("Failed to publish humidity"));
-	else
-		Serial.println(F("Humidity published!"));
-	Serial.println(humidityRelative);
-*/
+//empty loop to support sleep mode
 }
 
 void connectWiFi() {
@@ -130,10 +87,9 @@ void connectWiFi() {
 	WiFi.begin(WLAN_SSID, WLAN_PASS);
 	while (WiFi.status() != WL_CONNECTED) {
 		delay(500);
-		Serial.print(F("."));
+		Serial.print(F("+-"));
 	}
 	Serial.println();
-
 	Serial.println(F("WiFi connected"));
 	Serial.println(F("IP address: "));
 	Serial.println(WiFi.localIP());
@@ -180,43 +136,35 @@ void connectMQTT() {
 	Serial.println(F("Adafruit IO Connected!"));
 }
 
-int sendMQTTData (){
+void sendMQTTData() {
 	// Wait 10 seconds between measurements.
-		delay(10000);
+	delay(10000);
 
-		// ping adafruit io a few times to make sure we remain connected
-		if (!mqtt.ping(3)) {
-			// reconnect to adafruit_io
-			if (!mqtt.connected())
-				connectMQTT();
-		}
+	// ping adafruit io a few times to make sure we remain connected
+	if (!mqtt.ping(3)) {
+		// reconnect to adafruit_io
+		if (!mqtt.connected())
+			connectMQTT();
+	}
 
-		// Reading temperature or humidity takes about 250 milliseconds!
-		float humidityRelative = dht.readHumidity();
-		float tempFahrenheit = dht.readTemperature(true);
-		//prepping for power management
-		float batteryRemaining = 50.4;
+	// Reading temperature or humidity takes about 250 milliseconds!
+	float humidityRelative = dht.readHumidity();
+	float tempFahrenheit = dht.readTemperature(true);
+	//prepping for power management
+	float batteryRemaining = 50.6;
 
-		// Check if any reads failed and exit early (to try again).
-		if (isnan(
-				humidityRelative) || isnan(tempFahrenheit) || isnan(batteryRemaining)) {
-			Serial.println("Failed to read from DHT sensor!");
-			return 0;
-		}
-		else{
-		/***
-		 Serial.print("Humidity: ");
-		 Serial.print(humidityRelative);
-		 Serial.print(" %\t");
-		 Serial.print(tempFahrenheit);
-		 Serial.print(" *F\t");
-		 ***/
+	// Check if any reads failed and exit early (to try again).
+	if (isnan(
+			humidityRelative) || isnan(tempFahrenheit) || isnan(batteryRemaining)) {
+		Serial.println("Failed to read from DHT sensor!");
+	} else {
 
-		// Publish da
+		// Publish data
 		if (!battery.publish(batteryRemaining)) //prepping for power management
 			Serial.println(F("Failed to publish battery charge"));
 		else
 			Serial.println(F("Battery charge published!"));
+		Serial.println(batteryRemaining);
 
 		if (!temperature.publish(tempFahrenheit))
 			Serial.println(F("Failed to publish temperature"));
@@ -227,6 +175,5 @@ int sendMQTTData (){
 			Serial.println(F("Failed to publish humidity"));
 		else
 			Serial.println(F("Humidity published!"));
-		Serial.println(humidityRelative);
-		return 1;}
+	}
 }
