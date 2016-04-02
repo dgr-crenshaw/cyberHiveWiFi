@@ -12,6 +12,7 @@ DHT dht(DHTPIN, DHTTYPE);
 #include "ESP8266WiFi.h"
 #define WLAN_SSID "NETGEAR75"
 #define WLAN_PASS "greenstar582"
+const uint32_t sleepTimeSeconds = 3600; //for sleep time, number of seconds to sleep
 
 //Adafruit IO MQTT parameters
 #include "Adafruit_MQTT.h"
@@ -49,7 +50,6 @@ Adafruit_MQTT_Publish humidity = Adafruit_MQTT_Publish(&mqtt, HUMIDITY_FEED);
 const char BATTERY_FEED[] PROGMEM = AIO_USERNAME "/feeds/battery";
 Adafruit_MQTT_Publish battery = Adafruit_MQTT_Publish(&mqtt, BATTERY_FEED); //prepping for power management
 
-
 void setup() {
 	//init serial
 	Serial.begin(115200);
@@ -63,14 +63,8 @@ void setup() {
 	//connect to adafruit_io
 	connectMQTT();
 
-	Serial.println("Wakey Wakey"); //reset jumped to GPIO 16 = D0
-	sendMQTTData(); //get and publish data
-	Serial.println("Nighty Night");
+	espDeepSleep();
 
-	//go to sleep my little baby
-	// deepSleep time is defined in microseconds. Multiply seconds by 1e6
-	const int sleepTimeSeconds = 3600; //for sleep time, number of seconds to sleep
-	ESP.deepSleep(sleepTimeSeconds * 1000000);
 }
 
 void loop() {
@@ -170,7 +164,7 @@ void sendMQTTData() {
 	float humidityRelative = dht.readHumidity();
 	float tempFahrenheit = dht.readTemperature(true);
 	//prepping for power management
-	float batteryRemaining = 50.9;
+	float batteryRemaining = 51.1;
 	//int batteryRemaining = = analogRead(A0);
 	//batteryRemaining = map(batteryRemaining, 580, 774, 0, 100);
 
@@ -199,4 +193,13 @@ void sendMQTTData() {
 			Serial.println(F("Humidity published!"));
 		Serial.println(humidityRelative);
 	}
+}
+void espDeepSleep() {
+		Serial.println("Wakey Wakey"); //reset jumped to GPIO 16 = D0
+	sendMQTTData(); //get and publish data
+	Serial.println("Nighty Night");
+
+	//go to sleep my little baby
+	// deepSleep time is defined in microseconds. Multiply seconds by 1e6
+	ESP.deepSleep(sleepTimeSeconds * 1000000);
 }
