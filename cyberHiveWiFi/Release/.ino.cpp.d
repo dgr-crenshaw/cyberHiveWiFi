@@ -49,9 +49,11 @@
  /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/cores/esp8266/Server.h \
  /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/libraries/ESP8266WiFi/src/WiFiClientSecure.h \
  /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/libraries/ESP8266WiFi/src/include/ssl.h \
+ /home/dgrc/Documents/cyberHive/cyberHiveWiFi/includes/routerCredentials.h \
  /home/dgrc/arduinoLibraries/Adafruit_MQTT_Library/Adafruit_MQTT.h \
  /home/dgrc/arduinoLibraries/Adafruit_MQTT_Library/Adafruit_MQTT_Client.h \
  /home/dgrc/arduinoLibraries/Adafruit_MQTT_Library/Adafruit_MQTT.h \
+ /home/dgrc/Documents/cyberHive/cyberHiveWiFi/includes/mqttCredentials.h \
  ../cyberHiveWiFi.ino
 
 /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/cores/esp8266/Arduino.h:
@@ -154,10 +156,14 @@
 
 /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/libraries/ESP8266WiFi/src/include/ssl.h:
 
+/home/dgrc/Documents/cyberHive/cyberHiveWiFi/includes/routerCredentials.h:
+
 /home/dgrc/arduinoLibraries/Adafruit_MQTT_Library/Adafruit_MQTT.h:
 
 /home/dgrc/arduinoLibraries/Adafruit_MQTT_Library/Adafruit_MQTT_Client.h:
 
 /home/dgrc/arduinoLibraries/Adafruit_MQTT_Library/Adafruit_MQTT.h:
+
+/home/dgrc/Documents/cyberHive/cyberHiveWiFi/includes/mqttCredentials.h:
 
 ../cyberHiveWiFi.ino:

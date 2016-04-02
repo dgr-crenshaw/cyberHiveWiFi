@@ -10,17 +10,19 @@ DHT dht(DHTPIN, DHTTYPE);
 
 // WiFi parameters
 #include "ESP8266WiFi.h"
-#define WLAN_SSID "NETGEAR75"
-#define WLAN_PASS "greenstar582"
+#include "routerCredentials.h"
+//#define WLAN_SSID "FOO" //it's in routerCredentials.h and hidden from GitHub
+//#define WLAN_PASS "BAR" //it's in routerCredentials.h and hidden from GitHub
 const uint32_t sleepTimeSeconds = 3600; //for sleep time, number of seconds to sleep
 
 //Adafruit IO MQTT parameters
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
+#include "mqttCredentials.h"
 #define AIO_SERVER "io.adafruit.com"
 #define AIO_SERVERPORT 1883
-#define AIO_USERNAME "dgrc"
-#define AIO_KEY "d07a294b8495727687c45fa4f2314ae91fd3fac6"
+//#define AIO_USERNAME "foo" //it's in mqttCredentials.h and hidden from GitHub
+//#define AIO_KEY "bar"//it's in mqttCredentials.h and hidden from GitHub
 
 // Create an ESP8266 WiFiClient class to connect to the MQTT server.
 WiFiClient clientWiFi;
@@ -164,7 +166,7 @@ void sendMQTTData() {
 	float humidityRelative = dht.readHumidity();
 	float tempFahrenheit = dht.readTemperature(true);
 	//prepping for power management
-	float batteryRemaining = 51.1;
+	float batteryRemaining = 51.2;
 	//int batteryRemaining = = analogRead(A0);
 	//batteryRemaining = map(batteryRemaining, 580, 774, 0, 100);
 

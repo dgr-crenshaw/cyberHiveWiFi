@@ -80,5 +80,9 @@
 			<name>ArduinoPlatformPath</name>
 			<value>file:/home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/cores</value>
 		</variable>
+		<variable>
+			<name>dgrcIncludes</name>
+			<value>file:/home/dgrc/Documents/cyberHive/cyberHiveWiFi/includes</value>
+		</variable>
 	</variableList>
 </projectDescription>
