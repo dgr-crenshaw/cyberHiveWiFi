@@ -18,38 +18,38 @@ const uint32_t sleepTimeSeconds = 3600; //for sleep time, number of seconds to s
 //Adafruit IO MQTT parameters
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
-#include "mqttCredentials.h"
-#define AIO_SERVER "io.adafruit.com"
-#define AIO_SERVERPORT 1883
-//#define AIO_USERNAME "foo" //it's in mqttCredentials.h and hidden from GitHub
-//#define AIO_KEY "bar"//it's in mqttCredentials.h and hidden from GitHub
+//#include "mqttCredentials.h"
+#define BEEMQTT_SERVER "192.168.1.11"
+#define BEEMQTT_SERVERPORT 1883
+#define BEEMQTT_USERNAME "foo" //it's in mqttCredentials.h and hidden from GitHub
+#define BEEMQTT_KEY "bar"//it's in mqttCredentials.h and hidden from GitHub
 
 // Create an ESP8266 WiFiClient class to connect to the MQTT server.
 WiFiClient clientWiFi;
 
 // Store the MQTT server, client ID, username, and password in flash memory.
-const char MQTT_SERVER[] PROGMEM = AIO_SERVER;
+const char MQTT_SERVER[] PROGMEM = BEEMQTT_SERVER;
 
 // Set a unique MQTT client ID using the AIO key + the date and time the sketch
 // was compiled (so this should be unique across multiple devices for a user,
 // alternatively you can manually set this to a GUID or other random value).
-const char MQTT_CLIENTID[] PROGMEM = AIO_KEY __DATE__ __TIME__;
-const char MQTT_USERNAME[] PROGMEM = AIO_USERNAME;
-const char MQTT_PASSWORD[] PROGMEM = AIO_KEY;
+const char MQTT_CLIENTID[] PROGMEM = BEEMQTT_KEY __DATE__ __TIME__;
+const char MQTT_USERNAME[] PROGMEM = BEEMQTT_USERNAME;
+const char MQTT_PASSWORD[] PROGMEM = BEEMQTT_KEY;
 
 // Setup the MQTT client class by passing in the WiFi client and MQTT server and login details.
-Adafruit_MQTT_Client mqtt(&clientWiFi, MQTT_SERVER, AIO_SERVERPORT, MQTT_CLIENTID,
+Adafruit_MQTT_Client mqtt(&clientWiFi, MQTT_SERVER, BEEMQTT_SERVERPORT, MQTT_CLIENTID,
 		MQTT_USERNAME, MQTT_PASSWORD);/****************************** Feeds ***************************************/
 
 // Setup feeds for temperature & humidity & battery
-const char TEMPERATURE_FEED[] PROGMEM = AIO_USERNAME "/feeds/temperature";
+const char TEMPERATURE_FEED[] PROGMEM = BEEMQTT_USERNAME "/feeds/temperature";
 Adafruit_MQTT_Publish temperature = Adafruit_MQTT_Publish(&mqtt,
 		TEMPERATURE_FEED);
 
-const char HUMIDITY_FEED[] PROGMEM = AIO_USERNAME "/feeds/humidity";
+const char HUMIDITY_FEED[] PROGMEM = BEEMQTT_USERNAME "/feeds/humidity";
 Adafruit_MQTT_Publish humidity = Adafruit_MQTT_Publish(&mqtt, HUMIDITY_FEED);
 
-const char BATTERY_FEED[] PROGMEM = AIO_USERNAME "/feeds/battery";
+const char BATTERY_FEED[] PROGMEM = BEEMQTT_USERNAME "/feeds/battery";
 Adafruit_MQTT_Publish battery = Adafruit_MQTT_Publish(&mqtt, BATTERY_FEED); //prepping for power management
 
 void setup() {
@@ -62,7 +62,7 @@ void setup() {
 	//connect to WiFi
 	connectWiFi();
 
-	//connect to adafruit_io
+	//connect to local mqtt server
 	connectMQTT();
 
 	espDeepSleep();
@@ -93,10 +93,10 @@ void connectWiFi() {
 
 }
 
-// connect to adafruit_io via MQTT
+// connect to local mqtt server via MQTT
 void connectMQTT() {
 
-	Serial.print(F("Connecting to Adafruit IO... "));
+	Serial.print(F("Connecting to local mqtt server... "));
 	int8_t ret;
 
 	while ((ret = mqtt.connect()) != 0) {
@@ -130,16 +130,16 @@ void connectMQTT() {
 		delay(5000);
 	}
 
-	Serial.println(F("Adafruit IO Connected!"));
+	Serial.println(F("local mqtt server Connected!"));
 }
 
 void sendMQTTData() {
 	// Wait 10 seconds between measurements.
 	delay(10000);
 
-	// ping adafruit io a few times to make sure we remain connected
+	// ping local mqtt server a few times to make sure we remain connected
 	if (!mqtt.ping(3)) {
-		// reconnect to adafruit_io
+		// reconnect to local mqtt server
 		if (!mqtt.connected())
 			connectMQTT();
 	}
@@ -166,7 +166,7 @@ void sendMQTTData() {
 	float humidityRelative = dht.readHumidity();
 	float tempFahrenheit = dht.readTemperature(true);
 	//prepping for power management
-	float batteryRemaining = 51.2;
+	float batteryRemaining = 51.4;
 	//int batteryRemaining = = analogRead(A0);
 	//batteryRemaining = map(batteryRemaining, 580, 774, 0, 100);
 
