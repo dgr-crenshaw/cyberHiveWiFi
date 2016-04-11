@@ -4,15 +4,25 @@
 
 // DHT 22 sensor parameters
 #include "DHT.h"
-#define DHTPIN D4 //WeMos DHT22 shield hardwired pin
+
+//for three channel, use D1 D2 D3
+
+#define DHTPIN_01 D4 //WeMos DHT22 shield hardwired pin
+//#define DHTPIN_01 D1 //No shield -- 3 channel
+#define DHTPIN_02 D2 //No shield -- 3 channel
+#define DHTPIN_03 D3 //No shield -- 3 channel
+
 #define DHTTYPE DHT22
-DHT dht(DHTPIN, DHTTYPE);
+DHT dht_01(DHTPIN_01, DHTTYPE);
+DHT dht_02(DHTPIN_02, DHTTYPE);//No shield -- 3 channel
+DHT dht_03(DHTPIN_03, DHTTYPE);//No shield -- 3 channel
 
 // WiFi parameters
 #include "ESP8266WiFi.h"
 #include "routerCredentials.h"
 //#define WLAN_SSID "FOO" //it's in routerCredentials.h and hidden from GitHub
 //#define WLAN_PASS "BAR" //it's in routerCredentials.h and hidden from GitHub
+
 const uint32_t sleepTimeSeconds = 3600; //for sleep time, number of seconds to sleep
 
 //Adafruit IO MQTT parameters
@@ -38,16 +48,32 @@ const char MQTT_USERNAME[] PROGMEM = BEEMQTT_USERNAME;
 const char MQTT_PASSWORD[] PROGMEM = BEEMQTT_KEY;
 
 // Setup the MQTT client class by passing in the WiFi client and MQTT server and login details.
-Adafruit_MQTT_Client mqtt(&clientWiFi, MQTT_SERVER, BEEMQTT_SERVERPORT, MQTT_CLIENTID,
-		MQTT_USERNAME, MQTT_PASSWORD);/****************************** Feeds ***************************************/
+Adafruit_MQTT_Client mqtt(&clientWiFi, MQTT_SERVER, BEEMQTT_SERVERPORT,
+		MQTT_CLIENTID, MQTT_USERNAME, MQTT_PASSWORD);/****************************** Feeds ***************************************/
 
 // Setup feeds for temperature & humidity & battery
-const char TEMPERATURE_FEED[] PROGMEM = BEEMQTT_USERNAME "/feeds/temperature";
-Adafruit_MQTT_Publish temperature = Adafruit_MQTT_Publish(&mqtt,
-		TEMPERATURE_FEED);
+const char TEMPERATURE_01_FEED[] PROGMEM = BEEMQTT_USERNAME "/feeds/tempSensor01";
+Adafruit_MQTT_Publish temperature_01 = Adafruit_MQTT_Publish(&mqtt,
+		TEMPERATURE_01_FEED);
 
-const char HUMIDITY_FEED[] PROGMEM = BEEMQTT_USERNAME "/feeds/humidity";
-Adafruit_MQTT_Publish humidity = Adafruit_MQTT_Publish(&mqtt, HUMIDITY_FEED);
+const char HUMIDITY_01_FEED[] PROGMEM = BEEMQTT_USERNAME "/feeds/humiditySensor01";
+Adafruit_MQTT_Publish humidity_01 = Adafruit_MQTT_Publish(&mqtt, HUMIDITY_01_FEED);
+
+// Setup feeds for additional temperature & humidity feeds
+const char TEMPERATURE_02_FEED[] PROGMEM = BEEMQTT_USERNAME "/feeds/tempSensor02";
+Adafruit_MQTT_Publish temperature_02 = Adafruit_MQTT_Publish(&mqtt,
+		TEMPERATURE_02_FEED);
+
+const char HUMIDITY_02_FEED[] PROGMEM = BEEMQTT_USERNAME "/feeds/humiditySensor02";
+Adafruit_MQTT_Publish humidity_02 = Adafruit_MQTT_Publish(&mqtt, HUMIDITY_02_FEED);
+
+const char TEMPERATURE_03_FEED[] PROGMEM = BEEMQTT_USERNAME "/feeds/tempSensor03";
+Adafruit_MQTT_Publish temperature_03 = Adafruit_MQTT_Publish(&mqtt,
+		TEMPERATURE_03_FEED);
+
+const char HUMIDITY_03_FEED[] PROGMEM = BEEMQTT_USERNAME "/feeds/humiditySensor03";
+Adafruit_MQTT_Publish humidity_03 = Adafruit_MQTT_Publish(&mqtt, HUMIDITY_03_FEED);
+
 
 const char BATTERY_FEED[] PROGMEM = BEEMQTT_USERNAME "/feeds/battery";
 Adafruit_MQTT_Publish battery = Adafruit_MQTT_Publish(&mqtt, BATTERY_FEED); //prepping for power management
@@ -57,8 +83,9 @@ void setup() {
 	Serial.begin(115200);
 
 	// init sensor
-	dht.begin();
-
+	dht_01.begin();
+	dht_02.begin(),//No shield -- 3 channel
+	//dht_03.begin(),//No shield -- 3 channel
 	//connect to WiFi
 	connectWiFi();
 
@@ -145,59 +172,106 @@ void sendMQTTData() {
 	}
 
 	/*****
-	Reading temperature or humidity takes about 250 milliseconds
+	 Reading temperature or humidity takes about 250 milliseconds
 
-	read the battery level from the ESP8266 analog in pin.
-	analog read level is 10 bit 0-1023 (0V-1V).
+	 read the battery level from the ESP8266 analog in pin.
+	 analog read level is 10 bit 0-1023 (0V-1V).
 
-	our 1M & 220K voltage divider takes the max
-	lipo value of 4.2V and drops it to 0.758V max.
-	this means our min analog read value should be 580 (3.14V)
-	and the max analog read value should be 774 (4.2V).
+	 our 1M & 220K voltage divider takes the max
+	 lipo value of 4.2V and drops it to 0.758V max.
+	 this means our min analog read value should be 580 (3.14V)
+	 and the max analog read value should be 774 (4.2V).
 
 
-	TODO check voltage of battery pack
-	TODO build voltage divider
-	TODO adjust map() values
-	TODO hook up to A0 pin
+	 TODO check voltage of battery pack
+	 TODO build voltage divider
+	 TODO adjust map() values
+	 TODO hook up to A0 pin
 
-	*****/
+	 *****/
 
-	float humidityRelative = dht.readHumidity();
-	float tempFahrenheit = dht.readTemperature(true);
+	float humidityRelative_01 = dht_01.readHumidity();
+	float humidityRelative_02 = dht_02.readHumidity();
+	float humidityRelative_03 = dht_03.readHumidity();
+	float tempFahrenheit_01 = dht_01.readTemperature(true);
+	float tempFahrenheit_02 = dht_02.readTemperature(true);
+	float tempFahrenheit_03 = dht_03.readTemperature(true);
 	//prepping for power management
-	float batteryRemaining = 51.4;
+	float batteryRemaining = 51.55;
 	//int batteryRemaining = = analogRead(A0);
 	//batteryRemaining = map(batteryRemaining, 580, 774, 0, 100);
 
 	// Check if any reads failed and exit early (to try again).
-	if (isnan(
-			humidityRelative) || isnan(tempFahrenheit) || isnan(batteryRemaining)) {
-		Serial.println("Failed to read from DHT sensor!");
+	if ( //battery test
+	isnan(batteryRemaining)) {
+		Serial.println("Battery disconnected");
 	} else {
 
-		// Publish data
+		// Publish battery data
 		if (!battery.publish(batteryRemaining)) //prepping for power management
 			Serial.println(F("Failed to publish battery charge"));
 		else
 			Serial.println(F("Battery charge published!"));
 		Serial.println(batteryRemaining);
-
-		if (!temperature.publish(tempFahrenheit))
-			Serial.println(F("Failed to publish temperature"));
-		else
-			Serial.println(F("Temperature published!"));
-		Serial.println(tempFahrenheit);
-
-		if (!humidity.publish(humidityRelative))
-			Serial.println(F("Failed to publish humidity"));
-		else
-			Serial.println(F("Humidity published!"));
-		Serial.println(humidityRelative);
 	}
+
+	if ( //dht_01 test
+	isnan(tempFahrenheit_01) || isnan(humidityRelative_01)) {
+		Serial.println("Sensor 1 disconnected");
+		temperature_01.publish("Sensor 1 disconnected");
+	} else {
+		if (!temperature_01.publish(tempFahrenheit_01))
+			Serial.println(F("Failed to publish Sensor 1 temperature"));
+		else
+			Serial.println(F("Temperature Sensor 1 published!"));
+		Serial.println(tempFahrenheit_01);
+
+		if (!humidity_01.publish(humidityRelative_01))
+			Serial.println(F("Failed to publish Sensor 1 humidity"));
+		else
+			Serial.println(F("Humidity Sensor 1 published!"));
+		Serial.println(humidityRelative_01);
+	}
+
+	if ( //dht_02 test
+		isnan(tempFahrenheit_02) || isnan(humidityRelative_02)) {
+			Serial.println("Sensor 2 disconnected");
+			temperature_02.publish("Sensor 2 disconnected");
+		} else {
+			if (!temperature_02.publish(tempFahrenheit_02))
+				Serial.println(F("Failed to publish Sensor 2 temperature"));
+			else
+				Serial.println(F("Temperature Sensor 2 published!"));
+			Serial.println(tempFahrenheit_02);
+
+			if (!humidity_02.publish(humidityRelative_02))
+				Serial.println(F("Failed to publish Sensor 2 humidity"));
+			else
+				Serial.println(F("Humidity Sensor 2 published!"));
+			Serial.println(humidityRelative_02);
+		}
+
+	if ( //dht_03 test
+	isnan(tempFahrenheit_03) || isnan(humidityRelative_03)) {
+		Serial.println("Sensor 3 disconnected");
+		temperature_03.publish("Sensor 3 disconnected");
+	} else {
+		if (!temperature_03.publish(tempFahrenheit_03))
+			Serial.println(F("Failed to publish Sensor 3 temperature"));
+		else
+			Serial.println(F("Temperature Sensor 3 published!"));
+		Serial.println(tempFahrenheit_03);
+
+		if (!humidity_03.publish(humidityRelative_03))
+			Serial.println(F("Failed to publish Sensor 3 humidity"));
+		else
+			Serial.println(F("Humidity Sensor 3 published!"));
+		Serial.println(humidityRelative_03);
+	}
+
 }
 void espDeepSleep() {
-		Serial.println("Wakey Wakey"); //reset jumped to GPIO 16 = D0
+	Serial.println("Wakey Wakey"); //reset jumped to GPIO 16 = D0
 	sendMQTTData(); //get and publish data
 	Serial.println("Nighty Night");
 
