@@ -27,7 +27,7 @@
  /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/cores/esp8266/MD5Builder.h \
  /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/cores/esp8266/md5.h \
  /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/cores/esp8266/debug.h \
- /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/variants/d1_mini/pins_arduino.h \
+ /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/variants/adafruit/pins_arduino.h \
  /home/dgrc/arduinoLibraries/DHT/DHT.h \
  /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/libraries/ESP8266WiFi/src/ESP8266WiFi.h \
  /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/libraries/ESP8266WiFi/src/include/wl_definitions.h \
@@ -111,7 +111,7 @@
 
 /home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/cores/esp8266/debug.h:
 
-/home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/variants/d1_mini/pins_arduino.h:
+/home/dgrc/.arduino15/packages/esp8266/hardware/esp8266/2.1.0/variants/adafruit/pins_arduino.h:
 
 /home/dgrc/arduinoLibraries/DHT/DHT.h:
 

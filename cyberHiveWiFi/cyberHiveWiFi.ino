@@ -7,10 +7,18 @@
 
 //for three channel, use D1 D2 D3
 
+/* for WeMos D1
 #define DHTPIN_01 D4 //WeMos DHT22 shield hardwired pin
 //#define DHTPIN_01 D1 //No shield -- 3 channel
 #define DHTPIN_02 D2 //No shield -- 3 channel
 #define DHTPIN_03 D3 //No shield -- 3 channel
+*/
+
+//for HuzzahESP8266
+#define DHTPIN_01 2 //WeMos DHT22 shield hardwired pin
+//#define DHTPIN_01 D1 //No shield -- 3 channel
+#define DHTPIN_02 4 //No shield -- 3 channel
+#define DHTPIN_03 5 //No shield -- 3 channel
 
 #define DHTTYPE DHT22
 DHT dht_01(DHTPIN_01, DHTTYPE);
@@ -23,7 +31,7 @@ DHT dht_03(DHTPIN_03, DHTTYPE); //No shield -- 3 channel
 //#define WLAN_SSID "FOO" //it's in routerCredentials.h and hidden from GitHub
 //#define WLAN_PASS "BAR" //it's in routerCredentials.h and hidden from GitHub
 
-const uint32_t sleepTimeSeconds = 600; //for sleep time, number of seconds to sleep
+const uint32_t sleepTimeSeconds = 3600; //for sleep time, number of seconds to sleep
 
 //Adafruit IO MQTT parameters
 #include "Adafruit_MQTT.h"
@@ -53,33 +61,33 @@ Adafruit_MQTT_Client mqtt(&clientWiFi, MQTT_SERVER, BEEMQTT_SERVERPORT,
 
 // Setup feeds for temperature & humidity & battery
 const char TEMPERATURE_01_FEED[] PROGMEM
-		= BEEMQTT_USERNAME "/feeds/tempSensor01";
+= BEEMQTT_USERNAME "/feeds/tempSensor01";
 Adafruit_MQTT_Publish temperature_01 = Adafruit_MQTT_Publish(&mqtt,
 		TEMPERATURE_01_FEED);
 
 const char HUMIDITY_01_FEED[] PROGMEM
-		= BEEMQTT_USERNAME "/feeds/humiditySensor01";
+= BEEMQTT_USERNAME "/feeds/humiditySensor01";
 Adafruit_MQTT_Publish humidity_01 = Adafruit_MQTT_Publish(&mqtt,
 		HUMIDITY_01_FEED);
 
 // Setup feeds for additional temperature & humidity feeds
 const char TEMPERATURE_02_FEED[] PROGMEM
-		= BEEMQTT_USERNAME "/feeds/tempSensor02";
+= BEEMQTT_USERNAME "/feeds/tempSensor02";
 Adafruit_MQTT_Publish temperature_02 = Adafruit_MQTT_Publish(&mqtt,
 		TEMPERATURE_02_FEED);
 
 const char HUMIDITY_02_FEED[] PROGMEM
-		= BEEMQTT_USERNAME "/feeds/humiditySensor02";
+= BEEMQTT_USERNAME "/feeds/humiditySensor02";
 Adafruit_MQTT_Publish humidity_02 = Adafruit_MQTT_Publish(&mqtt,
 		HUMIDITY_02_FEED);
 
 const char TEMPERATURE_03_FEED[] PROGMEM
-		= BEEMQTT_USERNAME "/feeds/tempSensor03";
+= BEEMQTT_USERNAME "/feeds/tempSensor03";
 Adafruit_MQTT_Publish temperature_03 = Adafruit_MQTT_Publish(&mqtt,
 		TEMPERATURE_03_FEED);
 
 const char HUMIDITY_03_FEED[] PROGMEM
-		= BEEMQTT_USERNAME "/feeds/humiditySensor03";
+= BEEMQTT_USERNAME "/feeds/humiditySensor03";
 Adafruit_MQTT_Publish humidity_03 = Adafruit_MQTT_Publish(&mqtt,
 		HUMIDITY_03_FEED);
 
@@ -88,12 +96,12 @@ Adafruit_MQTT_Publish battery = Adafruit_MQTT_Publish(&mqtt, BATTERY_FEED); //pr
 
 void setup() {
 	//init serial
-	Serial.begin(115200);
+	//Serial.begin(115200);
 
 	// init sensor
 	dht_01.begin();
 	dht_02.begin(), //No shield -- 3 channel
-	//dht_03.begin(),//No shield -- 3 channel
+	dht_03.begin(),//No shield -- 3 channel
 	//connect to WiFi
 	connectWiFi();
 
@@ -181,22 +189,6 @@ void sendMQTTData() {
 
 	/*****
 	 Reading temperature or humidity takes about 250 milliseconds
-
-	 read the battery level from the ESP8266 analog in pin.
-	 analog read level is 10 bit 0-1023 (0V-1V).
-	 the following is for a test load only while I learn how this works
-	 1K & !K voltage divider takes the max
-	 aaa value of 1.6V and drops it to 0.8V max.
-	 this means our min analog read value should be 0 (0 V -- dead battery)
-	 and the max analog read value should be 800 (1.6 V).
-
-	 or deliver the voltage directly from the A0 pin
-
-	 TODO check voltage of battery pack
-	 TODO build voltage divider
-	 TODO adjust map() values
-	 TODO hook up to A0 pin
-
 	 *****/
 
 	float humidityRelative_01 = dht_01.readHumidity();
@@ -205,17 +197,23 @@ void sendMQTTData() {
 	float tempFahrenheit_01 = dht_01.readTemperature(true);
 	float tempFahrenheit_02 = dht_02.readTemperature(true);
 	float tempFahrenheit_03 = dht_03.readTemperature(true);
-	//prepping for power management using simple test circuit with a aaa battery and two 1KR resistors. Initial 1.6 V divided to 800 mV
-	//where should the ground go
-	//float batteryRemaining = 51.55;
+
+	/*****
+	 * Battery power and monitoring
+	 * Test with soldered up aa x 4 battery pack and 7805 voltage regulator to power ESP/DHT
+	 * Voltage fell below useful after a few hours of 10 minute interval. 7805 draws 30 mV quiescent
+	 * Need to find more efficient power supply
+	 * Testing with 9V and 1 hour interva;
+	 */
 	float batteryRemaining = analogRead(A0);
+	float const adcFactor = 6.6 / 1023; // 3.3 volts is Wemos D1 Mini A0 max voltage using test aa battery and 50/50 voltage divider
 
 	Serial.println("Read value");
 	Serial.println(batteryRemaining);
 
 	//batteryRemaining = map(batteryRemaining, 0, 261, 0, 100);
 
-	batteryRemaining = (batteryRemaining/1023)*3.3;
+	batteryRemaining = batteryRemaining * adcFactor;
 
 	// Check if any reads failed and exit early (to try again)
 
