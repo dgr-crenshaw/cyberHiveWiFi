@@ -27,7 +27,10 @@ DHT dht_03(DHTPIN_03, DHTTYPE); //No shield -- 3 channel
 
 // WiFi parameters
 #include "ESP8266WiFi.h"
+ADC_MODE(ADC_VCC); //vcc read-mode
+
 #include "routerCredentials.h"
+
 //#define WLAN_SSID "FOO" //it's in routerCredentials.h and hidden from GitHub
 //#define WLAN_PASS "BAR" //it's in routerCredentials.h and hidden from GitHub
 
@@ -200,20 +203,17 @@ void sendMQTTData() {
 
 	/*****
 	 * Battery power and monitoring
-	 * Test with soldered up aa x 4 battery pack and 7805 voltage regulator to power ESP/DHT
-	 * Voltage fell below useful after a few hours of 10 minute interval. 7805 draws 30 mV quiescent
-	 * Need to find more efficient power supply
-	 * Testing with 9V and 1 hour interva;
+	 * ESP8266WiFi.h provides access to Vcc using getVcc()
 	 */
-	float batteryRemaining = analogRead(A0);
-	float const adcFactor = 6.6 / 1023; // 3.3 volts is Wemos D1 Mini A0 max voltage using test aa battery and 50/50 voltage divider
+	//direct reading indicates ESP.getVcc() = 3480 ~ 3.99V using Lipo
+	float batteryRemaining = ESP.getVcc()*4.00/3480;
 
 	Serial.println("Read value");
 	Serial.println(batteryRemaining);
 
 	//batteryRemaining = map(batteryRemaining, 0, 261, 0, 100);
 
-	batteryRemaining = batteryRemaining * adcFactor;
+	//batteryRemaining = batteryRemaining * adcFactor;
 
 	// Check if any reads failed and exit early (to try again)
 
@@ -223,7 +223,7 @@ void sendMQTTData() {
 	} else {
 
 		// Publish battery data
-		if (!battery.publish(batteryRemaining)) //prepping for power management
+		if (!battery.publish(batteryRemaining)) //pfor power management
 			Serial.println(F("Failed to publish battery charge"));
 		else
 			Serial.println(F("Battery voltage published!"));
