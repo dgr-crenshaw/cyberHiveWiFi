@@ -1,6 +1,6 @@
 // Example testing sketch for various DHT humidity/temperature sensors
 // Written by ladyada, public domain
-// Modified by dgrc to support MQTT adafruit_io dashboard
+// Modified by dgrc to support MQTT
 
 // DHT 22 sensor parameters
 #include "DHT.h"
@@ -8,11 +8,11 @@
 //for three channel, use D1 D2 D3
 
 /* for WeMos D1
-#define DHTPIN_01 D4 //WeMos DHT22 shield hardwired pin
-//#define DHTPIN_01 D1 //No shield -- 3 channel
-#define DHTPIN_02 D2 //No shield -- 3 channel
-#define DHTPIN_03 D3 //No shield -- 3 channel
-*/
+ #define DHTPIN_01 D4 //WeMos DHT22 shield hardwired pin
+ //#define DHTPIN_01 D1 //No shield -- 3 channel
+ #define DHTPIN_02 D2 //No shield -- 3 channel
+ #define DHTPIN_03 D3 //No shield -- 3 channel
+ */
 
 //for HuzzahESP8266
 #define DHTPIN_01 2 //WeMos DHT22 shield hardwired pin
@@ -104,7 +104,7 @@ void setup() {
 	// init sensor
 	dht_01.begin();
 	dht_02.begin(), //No shield -- 3 channel
-	dht_03.begin(),//No shield -- 3 channel
+	dht_03.begin(), //No shield -- 3 channel
 	//connect to WiFi
 	connectWiFi();
 
@@ -121,62 +121,66 @@ void loop() {
 
 void connectWiFi() {
 	// Connect to WiFi access point.
-	Serial.println();
-	Serial.println();
-	delay(10);
-	Serial.print(F("Connecting to "));
-	Serial.println(WLAN_SSID);
+	/*Serial.println();
+	 Serial.println();
+	 delay(10);
+	 Serial.print(F("Connecting to "));
+	 Serial.println(WLAN_SSID);
+	 */
 
 	WiFi.begin(WLAN_SSID, WLAN_PASS);
 	while (WiFi.status() != WL_CONNECTED) {
 		delay(500);
-		Serial.print(F("+-"));
+		//Serial.print(F("+-"));
 	}
-	Serial.println();
-	Serial.println(F("WiFi connected"));
-	Serial.println(F("IP address: "));
-	Serial.println(WiFi.localIP());
-
+	/*
+	 Serial.println();
+	 Serial.println(F("WiFi connected"));
+	 Serial.println(F("IP address: "));
+	 Serial.println(WiFi.localIP());
+	 */
 }
 
 // connect to local mqtt server via MQTT
 void connectMQTT() {
 
-	Serial.print(F("Connecting to local mqtt server... "));
+	//Serial.print(F("Connecting to local mqtt server... "));
 	int8_t ret;
 
 	while ((ret = mqtt.connect()) != 0) {
-		switch (ret) {
-		case 1:
-			Serial.println(F("Wrong protocol"));
-			break;
-		case 2:
-			Serial.println(F("ID rejected"));
-			break;
-		case 3:
-			Serial.println(F("Server unavailable"));
-			break;
-		case 4:
-			Serial.println(F("Bad user/pass"));
-			break;
-		case 5:
-			Serial.println(F("Not authorized"));
-			break;
-		case 6:
-			Serial.println(F("Failed to subscribe"));
-			break;
-		default:
-			Serial.println(F("Connection failed"));
-			break;
-		}
+		/*
+		 switch (ret) {
+		 case 1:
+		 Serial.println(F("Wrong protocol"));
+		 break;
+		 case 2:
+		 Serial.println(F("ID rejected"));
+		 break;
+		 case 3:
+		 Serial.println(F("Server unavailable"));
+		 break;
+		 case 4:
+		 Serial.println(F("Bad user/pass"));
+		 break;
+		 case 5:
+		 Serial.println(F("Not authorized"));
+		 break;
+		 case 6:
+		 Serial.println(F("Failed to subscribe"));
+		 break;
+		 default:
+		 Serial.println(F("Connection failed"));
+		 break;
+		 }
+		 */
 
 		if (ret >= 0)
 			mqtt.disconnect();
-		Serial.println(F("Retrying connection..."));
+		//Serial.println(F("Retrying connection..."));
 		delay(5000);
 	}
 
-	Serial.println(F("local mqtt server Connected!"));
+	//Serial.println(F("local mqtt server Connected!"));
 }
 
 void sendMQTTData() {
@@ -205,90 +209,124 @@ void sendMQTTData() {
 	 * Battery power and monitoring
 	 * ESP8266WiFi.h provides access to Vcc using getVcc()
 	 */
-	//direct reading indicates ESP.getVcc() = 3480 ~ 3.99V using Lipo
-	float batteryRemaining = ESP.getVcc()*4.00/3480;
+	float batteryRemaining = ESP.getVcc() / 1024;
 
-	Serial.println("Read value");
-	Serial.println(batteryRemaining);
+	//Serial.println("Read value");
+	//Serial.println(batteryRemaining);
+	//Check if any reads failed and exit early (to try again)
 
-	//batteryRemaining = map(batteryRemaining, 0, 261, 0, 100);
+	/*
+	 Serious refactoring to eliminate Serial debug reporting
 
-	//batteryRemaining = batteryRemaining * adcFactor;
+	 if ( //battery test
+	 isnan(batteryRemaining)) {
+	 batteryRemaining = 0.0;
+	 //Serial.println("Battery disconnected");
+	 } else {
 
-	// Check if any reads failed and exit early (to try again)
+	 // Publish battery data
+	 if (!battery.publish(batteryRemaining)) //for power management
+	 Serial.println(F("Failed to publish battery charge"));
+	 else
+	 Serial.println(F("Battery voltage published!"));
+	 Serial.println(batteryRemaining);
+	 }
 
-	if ( //battery test
+	 if ( //dht_01 test
+	 isnan(tempFahrenheit_01) || isnan(humidityRelative_01)) {
+	 Serial.println("Sensor 1 disconnected");
+	 temperature_01.publish("Sensor 1 disconnected");
+	 } else {
+	 if (!temperature_01.publish(tempFahrenheit_01))
+	 Serial.println(F("Failed to publish Sensor 1 temperature"));
+	 else
+	 Serial.println(F("Temperature Sensor 1 published!"));
+	 Serial.println(tempFahrenheit_01);
+
+	 if (!humidity_01.publish(humidityRelative_01))
+	 Serial.println(F("Failed to publish Sensor 1 humidity"));
+	 else
+	 Serial.println(F("Humidity Sensor 1 published!"));
+	 Serial.println(humidityRelative_01);
+	 }
+
+	 if ( //dht_02 test
+	 isnan(tempFahrenheit_02) || isnan(humidityRelative_02)) {
+	 Serial.println("Sensor 2 disconnected");
+	 temperature_02.publish("Sensor 2 disconnected");
+	 } else {
+	 if (!temperature_02.publish(tempFahrenheit_02))
+	 Serial.println(F("Failed to publish Sensor 2 temperature"));
+	 else
+	 Serial.println(F("Temperature Sensor 2 published!"));
+	 Serial.println(tempFahrenheit_02);
+
+	 if (!humidity_02.publish(humidityRelative_02))
+	 Serial.println(F("Failed to publish Sensor 2 humidity"));
+	 else
+	 Serial.println(F("Humidity Sensor 2 published!"));
+	 Serial.println(humidityRelative_02);
+	 }
+
+	 if ( //dht_03 test
+	 isnan(tempFahrenheit_03) || isnan(humidityRelative_03)) {
+	 Serial.println("Sensor 3 disconnected");
+	 temperature_03.publish("Sensor 3 disconnected");
+	 } else {
+	 if (!temperature_03.publish(tempFahrenheit_03))
+	 Serial.println(F("Failed to publish Sensor 3 temperature"));
+	 else
+	 Serial.println(F("Temperature Sensor 3 published!"));
+	 Serial.println(tempFahrenheit_03);
+
+	 if (!humidity_03.publish(humidityRelative_03))
+	 Serial.println(F("Failed to publish Sensor 3 humidity"));
+	 else
+	 Serial.println(F("Humidity Sensor 3 published!"));
+	 Serial.println(humidityRelative_03);
+	 }
+	 */
+
+	//test all sensors -- publish all successes (fails set to 0.0)
+	//TODO clean up failure reporting
+
+	if ( // battery test
 	isnan(batteryRemaining)) {
-		Serial.println("Battery disconnected");
-	} else {
-
-		// Publish battery data
-		if (!battery.publish(batteryRemaining)) //pfor power management
-			Serial.println(F("Failed to publish battery charge"));
-		else
-			Serial.println(F("Battery voltage published!"));
-		Serial.println(batteryRemaining);
+		batteryRemaining = 0.0;
 	}
+	// Publish battery data
+	battery.publish(batteryRemaining);
 
 	if ( //dht_01 test
 	isnan(tempFahrenheit_01) || isnan(humidityRelative_01)) {
-		Serial.println("Sensor 1 disconnected");
-		temperature_01.publish("Sensor 1 disconnected");
-	} else {
-		if (!temperature_01.publish(tempFahrenheit_01))
-			Serial.println(F("Failed to publish Sensor 1 temperature"));
-		else
-			Serial.println(F("Temperature Sensor 1 published!"));
-		Serial.println(tempFahrenheit_01);
-
-		if (!humidity_01.publish(humidityRelative_01))
-			Serial.println(F("Failed to publish Sensor 1 humidity"));
-		else
-			Serial.println(F("Humidity Sensor 1 published!"));
-		Serial.println(humidityRelative_01);
+		tempFahrenheit_01 = 0.0;
+		humidityRelative_01 = 0.0;
 	}
+	temperature_01.publish(tempFahrenheit_01);
+	humidity_01.publish(humidityRelative_01);
 
 	if ( //dht_02 test
 	isnan(tempFahrenheit_02) || isnan(humidityRelative_02)) {
-		Serial.println("Sensor 2 disconnected");
-		temperature_02.publish("Sensor 2 disconnected");
-	} else {
-		if (!temperature_02.publish(tempFahrenheit_02))
-			Serial.println(F("Failed to publish Sensor 2 temperature"));
-		else
-			Serial.println(F("Temperature Sensor 2 published!"));
-		Serial.println(tempFahrenheit_02);
-
-		if (!humidity_02.publish(humidityRelative_02))
-			Serial.println(F("Failed to publish Sensor 2 humidity"));
-		else
-			Serial.println(F("Humidity Sensor 2 published!"));
-		Serial.println(humidityRelative_02);
+		tempFahrenheit_02 = 0.0;
+		humidityRelative_02 = 0.0;
 	}
+	temperature_02.publish(tempFahrenheit_02);
+	humidity_02.publish(humidityRelative_02);
 
 	if ( //dht_03 test
 	isnan(tempFahrenheit_03) || isnan(humidityRelative_03)) {
-		Serial.println("Sensor 3 disconnected");
-		temperature_03.publish("Sensor 3 disconnected");
-	} else {
-		if (!temperature_03.publish(tempFahrenheit_03))
-			Serial.println(F("Failed to publish Sensor 3 temperature"));
-		else
-			Serial.println(F("Temperature Sensor 3 published!"));
-		Serial.println(tempFahrenheit_03);
-
-		if (!humidity_03.publish(humidityRelative_03))
-			Serial.println(F("Failed to publish Sensor 3 humidity"));
-		else
-			Serial.println(F("Humidity Sensor 3 published!"));
-		Serial.println(humidityRelative_03);
+		tempFahrenheit_03 = 0.0;
+		humidityRelative_03 = 0.0;
 	}
+	temperature_03.publish(tempFahrenheit_03);
+	humidity_03.publish(humidityRelative_03);
 
 }
+
 void espDeepSleep() {
-	Serial.println("Wakey Wakey"); //reset jumped to GPIO 16 = D0
+	//Serial.println("Wakey Wakey"); //reset jumped to GPIO 16 = D0
 	sendMQTTData(); //get and publish data
-	Serial.println("Nighty Night");
+	//Serial.println("Nighty Night");
 
 	//go to sleep my little baby
 	// deepSleep time is defined in microseconds. Multiply seconds by 1e6
