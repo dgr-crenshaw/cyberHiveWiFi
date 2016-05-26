@@ -27,14 +27,15 @@ DHT dht_03(DHTPIN_03, DHTTYPE); //No shield -- 3 channel
 
 // WiFi parameters
 #include "ESP8266WiFi.h"
-ADC_MODE(ADC_VCC); //vcc read-mode
+//ADC_MODE(ADC_VCC); //vcc read-mode
+
 
 #include "routerCredentials.h"
 
 //#define WLAN_SSID "FOO" //it's in routerCredentials.h and hidden from GitHub
 //#define WLAN_PASS "BAR" //it's in routerCredentials.h and hidden from GitHub
 
-const uint32_t sleepTimeSeconds = 3600; //for sleep time, number of seconds to sleep
+const uint32_t sleepTimeSeconds = 30; //for sleep time, number of seconds to sleep
 
 //Adafruit IO MQTT parameters
 #include "Adafruit_MQTT.h"
@@ -99,7 +100,7 @@ Adafruit_MQTT_Publish battery = Adafruit_MQTT_Publish(&mqtt, BATTERY_FEED); //pr
 
 void setup() {
 	//init serial
-	//Serial.begin(115200);
+	Serial.begin(115200);
 
 	// init sensor
 	dht_01.begin();
@@ -133,12 +134,12 @@ void connectWiFi() {
 		delay(500);
 		//Serial.print(F("+-"));
 	}
-	/*
+
 	 Serial.println();
 	 Serial.println(F("WiFi connected"));
 	 Serial.println(F("IP address: "));
 	 Serial.println(WiFi.localIP());
-	 */
+
 }
 
 // connect to local mqtt server via MQTT
@@ -180,7 +181,7 @@ void connectMQTT() {
 		delay(5000);
 	}
 
-	//Serial.println(F("local mqtt server Connected!"));
+	Serial.println(F("local mqtt server Connected!"));
 }
 
 void sendMQTTData() {
@@ -209,7 +210,10 @@ void sendMQTTData() {
 	 * Battery power and monitoring
 	 * ESP8266WiFi.h provides access to Vcc using getVcc()
 	 */
-	float batteryRemaining = ESP.getVcc() / 1024;
+	//float batteryRemaining = ESP.getVcc() / 1024;
+	float batteryRemaining = analogRead(A0); //0-1024
+	float const factorADC = 1/1024;//give a voltage conversion factor
+	batteryRemaining = batteryRemaining*factorADC;
 
 	//Serial.println("Read value");
 	//Serial.println(batteryRemaining);
@@ -296,6 +300,7 @@ void sendMQTTData() {
 	}
 	// Publish battery data
 	battery.publish(batteryRemaining);
+	Serial.println(batteryRemaining);
 
 	if ( //dht_01 test
 	isnan(tempFahrenheit_01) || isnan(humidityRelative_01)) {
