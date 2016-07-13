@@ -3,6 +3,7 @@
 // Written by ladyada, public domain
 // Modified by dgrc to support MQTT
 // Further modified by dgrc to support Node-Red by feeding it JSON data
+// Sensor failure handling sends "nan" in json
 
 // DHT 22 sensor parameters
 #include "DHT.h"
@@ -29,18 +30,28 @@ DHT dht_03(DHTPIN_03, DHTTYPE); //No shield -- 3 channel
 
 // WiFi parameters
 #include "ESP8266WiFi.h"
-
 #include "routerCredentials.h"
 
-const uint32_t sleepTimeSeconds = 3600; //for sleep time, number of seconds to sleep
+/* routerCredentials.h
+#define WLAN_SSID "foo"
+#define WLAN_PASS "bar"
+*/
+
+//TODO bookmark
+const uint32_t sleepTimeSeconds = 3600; //for sleep time, number of seconds to sleep production
+//const uint32_t sleepTimeSeconds = 30; //for sleep time, number of seconds to sleep test
 
 //Adafruit IO MQTT parameters
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "mqttCredentials.h"
 
-#define BEEMQTT_SERVER "192.168.1.11"
+/* mqttCredential.h
+#define BEEMQTT_USERNAME "foo"
+#define BEEMQTT_KEY "bar"
+#define BEEMQTT_SERVER "xxx.xxx.xxx.xxx"
 #define BEEMQTT_SERVERPORT 1883
+ */
 
 // Create an ESP8266 WiFiClient class to connect to the MQTT server.
 WiFiClient clientWiFi;
@@ -233,10 +244,12 @@ void sendMQTTData() {
 
 	//test all sensors -- publish all successes (fails set to 0.0)
 	//TODO clean up failure reporting
+	//forcing a string then forcing a "nan" for json is a real kludge
 
 	if ( // battery test
 	isnan(averageReadingBattery)) {
 		averageReadingBattery = 0.0;
+		//String(averageReadingBattery) = "xx"; //forces nan to json
 	}
 	// Publish battery data
 	battery.publish(averageReadingBattery);
@@ -245,7 +258,9 @@ void sendMQTTData() {
 	if ( //dht_01 test
 	isnan(tempFahrenheit_01) || isnan(humidityRelative_01)) {
 		tempFahrenheit_01 = 0.0;
+		//String(tempFahrenheit_01) = "xx"; //forces nan to json
 		humidityRelative_01 = 0.0;
+		//String(humidityRelative_01) = "xx"; //forces nan to json
 	}
 	temperature_01.publish(tempFahrenheit_01);
 	humidity_01.publish(humidityRelative_01);
@@ -253,7 +268,9 @@ void sendMQTTData() {
 	if ( //dht_02 test
 	isnan(tempFahrenheit_02) || isnan(humidityRelative_02)) {
 		tempFahrenheit_02 = 0.0;
+		//String(tempFahrenheit_02)  = "xx"; //forces nan to json
 		humidityRelative_02 = 0.0;
+		//String(humidityRelative_02)  = "xx"; //forces nan to json
 	}
 	temperature_02.publish(tempFahrenheit_02);
 	humidity_02.publish(humidityRelative_02);
@@ -261,7 +278,9 @@ void sendMQTTData() {
 	if ( //dht_03 test
 	isnan(tempFahrenheit_03) || isnan(humidityRelative_03)) {
 		tempFahrenheit_03 = 0.0;
+		//String(tempFahrenheit_03)  = "xx"; //forces nan to json
 		humidityRelative_03 = 0.0;
+		String(humidityRelative_03) = "xx"; //forces nan to json
 	}
 	temperature_03.publish(tempFahrenheit_03);
 	humidity_03.publish(humidityRelative_03);
@@ -277,7 +296,7 @@ void sendMQTTData() {
 			"\"t01\":\"" + String(tempFahrenheit_01) + "\","
 			"\"t02\":\"" + String(tempFahrenheit_02) + "\","
 			"\"t03\":\"" + String(tempFahrenheit_03) + "\","
-			"\"b\":\"" + String(averageReadingBattery) + "\"}"
+			"\"bat\":\"" + String(averageReadingBattery) + "\"}"
 			"}";
 
 //Serial.println("----------");
