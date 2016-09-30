@@ -1,5 +1,5 @@
-#include "Arduino.h"
 /* includes */
+#include "Arduino.h"
 
 #include <ESP8266WiFi.h>
 
@@ -25,7 +25,7 @@ WiFiClient clientWiFi;
 #include "routerCredentials.h"
 
 
-//MQTT connection setup for void sendMQTTData()
+//MQTT connection setup for void sendLocalMQTTData()
 #include "mqttCredentials.h"
 
 // Set a unique MQTT client ID using the BEEMQTT key + the date and time the sketch
@@ -34,12 +34,25 @@ WiFiClient clientWiFi;
 const char BEEMQTT_CLIENTID[] = BEEMQTT_KEY __DATE__ __TIME__;
 
 // Setup the MQTT client class by passing in the WiFi client and MQTT server and login details.
-Adafruit_MQTT_Client mqtt(&clientWiFi, BEEMQTT_SERVER, BEEMQTT_SERVERPORT,
+Adafruit_MQTT_Client mqttLocalBroker(&clientWiFi, BEEMQTT_SERVER, BEEMQTT_SERVERPORT,
     BEEMQTT_CLIENTID, BEEMQTT_USERNAME, BEEMQTT_KEY);
 
 //for JSON character array
-Adafruit_MQTT_Publish json = Adafruit_MQTT_Publish(&mqtt, BEEMQTT_USERNAME "/feeds/json"); //prepping for Node-Red + Mongodb
+Adafruit_MQTT_Publish json = Adafruit_MQTT_Publish(&mqttLocalBroker, BEEMQTT_USERNAME "/feeds/json"); //prepping for Node-Red + Mongodb
 
+//MQTT connection setup for void sendLocalMQTTData()
+#include "adafruitCredentials.h"
+
+// Set a unique MQTT client ID using the BEEMQTT key + the date and time the sketch
+// was compiled (so this should be unique across multiple devices for a user,
+// alternatively you can manually set this to a GUID or other random value).
+const char AIOMQTT_CLIENTID[] = AIOMQTT_KEY __DATE__ __TIME__;
+
+// Setup the MQTT client class by passing in the WiFi client and MQTT server and login details.
+Adafruit_MQTT_Client mqttAdafruit(&clientWiFi, AIOMQTT_SERVER, AIOMQTT_SERVERPORT,
+		AIOMQTT_CLIENTID, AIOMQTT_USERNAME, AIOMQTT_KEY);
+
+//TODO write calls to adafruit.io
 
 //dht sensor setup for HuzzahESP8266
 #define DHTPIN_01 2 //No shield -- 3 channel 1
@@ -103,17 +116,17 @@ void connectMQTT() {
     int8_t ret;
 
   // Stop if already connected.
-  if (mqtt.connected()) {
+  if (mqttLocalBroker.connected()) {
     return;
   }
 
   //Serial.print("Connecting to local MQTT server... ");
 
   uint8_t retries = 3;
-  while ((ret = mqtt.connect()) != 0) { // connect will return 0 for connected
-       //Serial.println(mqtt.connectErrorString(ret));
+  while ((ret = mqttLocalBroker.connect()) != 0) { // connect will return 0 for connected
+       //Serial.println(mqttLocalBroker.connectErrorString(ret));
        //Serial.println("Retrying MQTT connection in 5 seconds...");
-       mqtt.disconnect();
+       mqttLocalBroker.disconnect();
        delay(5000);  // wait 5 seconds
        retries--;
        if (retries == 0) {
@@ -125,14 +138,14 @@ void connectMQTT() {
   }
 
 //send data
-void sendMQTTData() {
+void sendLocalMQTTData() {
   // Wait 10 seconds between measurements.
   delay(10000);
 
   // ping local mqtt server a few times to make sure we remain connected
-  if (!mqtt.ping(3)) {
+  if (!mqttLocalBroker.ping(3)) {
     // reconnect to local mqtt server
-    if (!mqtt.connected())
+    if (!mqttLocalBroker.connected())
       connectMQTT();
   }
 
@@ -159,19 +172,19 @@ void sendMQTTData() {
 //Take readings
   while (loopCounter < loopLimit) {
     batteryRemaining = analogRead(A0); //read raw value 0-1024
-    //Serial.print("Battery Raw: ");
-    //Serial.println(batteryRemaining);
+    ////Serial.print("Battery Raw: ");
+    ////Serial.println(batteryRemaining);
     batteryRemaining = batteryRemaining * factorADC; //convert to fraction of 4.2 lipo
-    //Serial.print("Battery Calibrated: ");
-    //Serial.println(batteryRemaining);
+    ////Serial.print("Battery Calibrated: ");
+    ////Serial.println(batteryRemaining);
     sumReads += batteryRemaining; // add to count
     loopCounter++; //increment counter
     delay(100); //
   }
 
   averageReadingBattery = sumReads / loopLimit; //get the average
-  //Serial.print("Battery Average: ");
-  //Serial.println(averageReadingBattery);
+  ////Serial.print("Battery Average: ");
+  ////Serial.println(averageReadingBattery);
 
   //test all sensors -- publish all successes (fails set to 0.0)
   //TODO clean up failure reporting
@@ -240,7 +253,7 @@ void sendMQTTData() {
 void espDeepSleep() {
   //Serial.println("Wakey Wakey"); //reset jumped to GPIO 16 = D0
     connectWiFi();//connect to WiFi
-  sendMQTTData(); //get and publish data
+  sendLocalMQTTData(); //get and publish data
   //Serial.println("Nighty Night");
 
   //go to sleep my little baby

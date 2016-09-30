@@ -55,6 +55,7 @@
  /home/dgrc/arduinoLibraries/Adafruit_MQTT_Library/Adafruit_MQTT.h \
  /home/dgrc/Documents/cHiveWiFiHuzzah/includes/routerCredentials.h \
  /home/dgrc/Documents/cHiveWiFiHuzzah/includes/mqttCredentials.h \
+ /home/dgrc/Documents/cHiveWiFiHuzzah/includes/adafruitCredentials.h \
  ../cyberHivwWiFI.ino
 
 /home/dgrc/eclipseArduino/arduinoPlugin/packages/esp8266/hardware/esp8266/2.2.0/cores/esp8266/Arduino.h:
@@ -168,5 +169,7 @@
 /home/dgrc/Documents/cHiveWiFiHuzzah/includes/routerCredentials.h:
 
 /home/dgrc/Documents/cHiveWiFiHuzzah/includes/mqttCredentials.h:
+
+/home/dgrc/Documents/cHiveWiFiHuzzah/includes/adafruitCredentials.h:
 
 ../cyberHivwWiFI.ino:

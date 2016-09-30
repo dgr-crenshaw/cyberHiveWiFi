@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2016-09-09 15:42:32
+//This file has been generated on 2016-09-29 21:48:16
 
 #include "Arduino.h"
 #include "Arduino.h"
@@ -12,11 +12,12 @@
 #include <Adafruit_MQTT.h>
 #include "routerCredentials.h"
 #include "mqttCredentials.h"
+#include "adafruitCredentials.h"
 void setup() ;
 void loop() ;
 void connectWiFi() ;
 void connectMQTT() ;
-void sendMQTTData() ;
+void sendLocalMQTTData() ;
 void espDeepSleep() ;
 
 #include "cyberHivwWiFI.ino"
