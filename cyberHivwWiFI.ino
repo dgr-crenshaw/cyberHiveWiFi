@@ -225,6 +225,20 @@ void takeReadings() {
 	tempFahrenheit_01 = dht_01.readTemperature(true);
 	tempFahrenheit_02 = dht_02.readTemperature(true);
 	tempFahrenheit_03 = dht_03.readTemperature(true);
+	//Serial.print("Humidity01: ");
+	//Serial.println(humidityRelative_01);
+	//Serial.print("Temperature01: ";
+	//Serial.println(tempFahrenheit_01);
+	//Serial.print("Humidity02: ");
+	//Serial.println(humidityRelative_02);
+	//Serial.print("Temperature02: ");
+	//Serial.println(tempFahrenheit_02);
+	//Serial.print("Humidity03: ");
+	//Serial.println(humidityRelative_03);
+	//Serial.print("Temperature03: ");
+	//Serial.println(tempFahrenheit_03);
+
+
 
 	//Battery power and monitoring
 
