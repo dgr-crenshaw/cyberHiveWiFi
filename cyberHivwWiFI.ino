@@ -1,3 +1,21 @@
+/***************************************************
+  Adafruit MQTT Library ESP8266 Example
+
+  Must use ESP8266 Arduino from:
+    https://github.com/esp8266/Arduino
+
+  Works great with Adafruit's Huzzah ESP board & Feather
+  ----> https://www.adafruit.com/product/2471
+  ----> https://www.adafruit.com/products/2821
+
+  Adafruit invests time and resources providing this open source code,
+  please support Adafruit and open-source hardware by purchasing
+  products from Adafruit!
+
+  Written by Tony DiCola for Adafruit Industries.
+  MIT license, all text above must be included in any redistribution
+ ****************************************************/
+
 /* includes */
 #include "Arduino.h"
 
@@ -9,12 +27,13 @@
 #include <Adafruit_MQTT.h>
 
 // Example testing sketch for various DHT humidity/temperature sensors
-// Written by ladyada, public domain
+// See comments above for original author and license
 // Modified by dgrc to support MQTT
 // Further modified by dgrc to support Node-Red by feeding it JSON data
 // Sensor failure handling sends "nan" in json
 
 //sleep setup for void espDeepSleep()
+//TODO set back to 1800 (30 minutes) for production
 const uint32_t sleepTimeSeconds = 1800; //for sleep time, number of seconds to sleep production
 //const uint32_t sleepTimeSeconds = 30; //for sleep time, number of seconds to sleep test
 //
@@ -116,7 +135,7 @@ char jsonPublish[120]; //if this gets too big => runtime crash
 
 void setup() {
 	//init serial for debugging
-	//Serial.begin(115200);
+	Serial.begin(115200);
 
 	// inititialize sensor
 	dht_01.begin(); //no shield -- channel 1
@@ -141,76 +160,78 @@ void loop() {
 void connectWiFi() {
 	// Connect to WiFi access point.
 
-	//Serial.println();
-	//Serial.println();
+	Serial.println();
+	Serial.println();
 	delay(10);
-	//Serial.print(F("Connecting to "));
-	//Serial.println(WLAN_SSID);
+	Serial.print(F("Connecting to "));
+	Serial.println(WLAN_SSID);
 
 	WiFi.begin(WLAN_SSID, WLAN_PASS);
 	while (WiFi.status() != WL_CONNECTED) {
 		delay(500);
-		//Serial.print(F("+-"));
+		Serial.print(F("+-"));
 	}
 
-	//Serial.println();
-	//Serial.println(F("WiFi connected"));
-	//Serial.println(F("IP address: "));
-	//Serial.println(WiFi.localIP());
+	Serial.println();
+	Serial.println(F("WiFi connected"));
+	Serial.println(F("IP address: "));
+	Serial.println(WiFi.localIP());
 }
 
-// connect to mqtt server via MQTT
-void connectMQTT(int brokerToCall) {
-	int8_t ret;
+//connect to adafruit mqtt broker
+// Function to connect and reconnect as necessary to the MQTT server.
+// Should be called in the loop function and it will take care if connecting.
+void adafruitMqttConnect() {
+  int8_t ret;
 
-	// Stop if already connected
-	switch (brokerToCall) {
-	case 1:
-		if (mqttLocalBroker.connected()) {
-			return;
-		}
-		break;
-	case 2:
-		if (mqttAdafruit.connected()) {
-			return;
-		}
-	}
+  // Stop if already connected.
+  if (mqttAdafruit.connected()) {
+    return;
+  }
 
-	//Serial.print("Connecting to local MQTT server... ");
+  Serial.print("Connecting to adafruit MQTT... ");
 
-	uint8_t retries = 3;
-	switch (brokerToCall) {
-		case 1:
-	while ((ret = mqttLocalBroker.connect()) != 0) { // connect will return 0 for connected
-		//Serial.println(mqttLocalBroker.connectErrorString(ret));
-		//Serial.println("Retrying MQTT connection in 5 seconds...");
-		mqttLocalBroker.disconnect();
-		delay(5000);  // wait 5 seconds
-		retries--;
-		if (retries == 0) {
-			// basically die and wait for WDT to reset me
-			while (1)
-				;
-		}
-	}
-	//Serial.println("local mqtt server connected!");
-	break;
-		case 2:
-			while ((ret = mqttAdafruit.connect()) != 0) { // connect will return 0 for connected
-				//Serial.println(mqttAdafruit.connectErrorString(ret));
-				//Serial.println("Retrying MQTT connection in 5 seconds...");
-				mqttAdafruit.disconnect();
-				delay(5000);  // wait 5 seconds
-				retries--;
-				if (retries == 0) {
-					// basically die and wait for WDT to reset me
-					while (1)
-						;
-				}
-			}
-			//Serial.println("adafruit mqtt server connected!");
-			break;
-	}
+  uint8_t retries = 3;
+  while ((ret = mqttAdafruit.connect()) != 0) { // connect will return 0 for connected
+       Serial.println(mqttAdafruit.connectErrorString(ret));
+       Serial.println("Retrying adafruit MQTT connection in 5 seconds...");
+       mqttAdafruit.disconnect();
+       delay(5000);  // wait 5 seconds
+       retries--;
+       if (retries == 0) {
+         // basically die and wait for WDT to reset me
+         while (1);
+       }
+  }
+  Serial.println("MQTT Adafruit Connected!");
+}
+
+//connect to local mqtt broker
+// Function to connect and reconnect as necessary to the MQTT server.
+// Should be called in the loop function and it will take care if connecting.
+void localBrokerMqttConnect() {
+  int8_t ret;
+
+  // Stop if already connected.
+  if (mqttLocalBroker.connected()) {
+    return;
+  }
+
+  Serial.print("Connecting to local broker MQTT... ");
+
+  uint8_t retries = 3;
+  while ((ret = mqttLocalBroker.connect()) != 0) { // connect will return 0 for connected
+       Serial.println(mqttLocalBroker.connectErrorString(ret));
+       Serial.println("Retrying local broker MQTT connection in 5 seconds...");
+       mqttLocalBroker.disconnect();
+       delay(5000);  // wait 5 seconds
+       retries--;
+       if (retries == 0) {
+         // basically die and wait for WDT to reset me
+         while (1);
+       }
+  }
+  Serial.println("MQTT Local Broker Connected!");
 }
 
 //separate data collection from data publish local then publish to adafruit.io
@@ -225,18 +246,18 @@ void takeReadings() {
 	tempFahrenheit_01 = dht_01.readTemperature(true);
 	tempFahrenheit_02 = dht_02.readTemperature(true);
 	tempFahrenheit_03 = dht_03.readTemperature(true);
-	//Serial.print("Humidity01: ");
-	//Serial.println(humidityRelative_01);
-	//Serial.print("Temperature01: ";
-	//Serial.println(tempFahrenheit_01);
-	//Serial.print("Humidity02: ");
-	//Serial.println(humidityRelative_02);
-	//Serial.print("Temperature02: ");
-	//Serial.println(tempFahrenheit_02);
-	//Serial.print("Humidity03: ");
-	//Serial.println(humidityRelative_03);
-	//Serial.print("Temperature03: ");
-	//Serial.println(tempFahrenheit_03);
+	Serial.print("Humidity01: ");
+	Serial.println(humidityRelative_01);
+	Serial.print("Temperature01: ");
+	Serial.println(tempFahrenheit_01);
+	Serial.print("Humidity02: ");
+	Serial.println(humidityRelative_02);
+	Serial.print("Temperature02: ");
+	Serial.println(tempFahrenheit_02);
+	Serial.print("Humidity03: ");
+	Serial.println(humidityRelative_03);
+	Serial.print("Temperature03: ");
+	Serial.println(tempFahrenheit_03);
 
 
 
@@ -245,19 +266,19 @@ void takeReadings() {
 	//Take readings
 	while (loopCounter < loopLimit) {
 		batteryRemaining = analogRead(A0); //read raw value 0-1024
-		////Serial.print("Battery Raw: ");
-		////Serial.println(batteryRemaining);
+		Serial.print("Battery Raw: ");
+		Serial.println(batteryRemaining);
 		batteryRemaining = batteryRemaining * factorADC; //convert to fraction of 4.2 lipo
-		////Serial.print("Battery Calibrated: ");
-		////Serial.println(batteryRemaining);
+		Serial.print("Battery Calibrated: ");
+		Serial.println(batteryRemaining);
 		sumReads += batteryRemaining; // add to count
 		loopCounter++; //increment counter
 		delay(100); //
 	}
 
 	averageReadingBattery = sumReads / loopLimit; //get the average
-	////Serial.print("Battery Average: ");
-	////Serial.println(averageReadingBattery);
+	Serial.print("Battery Average: ");
+	Serial.println(averageReadingBattery);
 
 	//test all sensors -- publish all successes (fails set to 0.0)
 	//TODO clean up failure reporting
@@ -307,13 +328,13 @@ void takeReadings() {
 			"\"bat\":\"" + String(averageReadingBattery) + "\"}"
 			"}";
 
-	//Serial.println("----------");
-	//Serial.println("jsonData: " + jsonData);
+	Serial.println("----------");
+	Serial.println("jsonData: " + jsonData);
 
 	jsonData.toCharArray(jsonPublish, jsonData.length() + 1); //make the string a char array
 
-	//Serial.println("jsonDataXformed: " + jsonData);
-	//Serial.println("----------");
+	Serial.println("jsonDataXformed: " + jsonData);
+	Serial.println("----------");
 }
 
 //send data
@@ -321,49 +342,54 @@ void sendLocalMQTTData() {
 	// Wait 10 seconds between measurements.
 	delay(10000);
 
-	// ping local mqtt server a few times to make sure we remain connected
+	// ping local mqtt broker a few times to make sure we remain connected
 	if (!mqttLocalBroker.ping(3)) {
-		// reconnect to local mqtt server
+		// reconnect to local mqtt broker
 		if (!mqttLocalBroker.connected())
-			connectMQTT(1);
+			localBrokerMqttConnect();
 	}
 
 	// Publish JSON character array to MQTT topic
 	json.publish(jsonPublish);
+	mqttLocalBroker.disconnect(); //force disconnect so other mqtt allowed
+	Serial.println("json published");
 }
 
 void sendAdafruitIoMQTTData() {
 	// Wait 10 seconds between measurements.
 	delay(10000);
 
-	// ping local mqtt server a few times to make sure we remain connected
+	// ping local mqtt broker a few times to make sure we remain connected
 	if (!mqttAdafruit.ping(3)) {
-		// reconnect to local mqtt server
+		// reconnect to local mqtt broker
 		if (!mqttAdafruit.connected())
-			connectMQTT(2);
+			adafruitMqttConnect();
 	}
 
 	// Publish data to adafruit.io
 	temperature_01.publish(tempFahrenheit_01);
-	  humidity_01.publish(humidityRelative_01);
-	  temperature_01.publish(tempFahrenheit_02);
-	  humidity_01.publish(humidityRelative_02);
-	  temperature_01.publish(tempFahrenheit_03);
-	    humidity_01.publish(humidityRelative_03);
-	    battery.publish(averageReadingBattery);
+	humidity_01.publish(humidityRelative_01);
+	temperature_02.publish(tempFahrenheit_02);
+	humidity_02.publish(humidityRelative_02);
+	temperature_03.publish(tempFahrenheit_03);
+	humidity_03.publish(humidityRelative_03);
+	battery.publish(averageReadingBattery);
+	mqttAdafruit.disconnect(); //force disconnect so other mqtt allowed
+	Serial.println("adafruit published");
 }
 
 //sleep
 void espDeepSleep() {
-	//Serial.println("Wakey Wakey"); //reset jumped to GPIO 16 = D0
+	Serial.println("Wakey Wakey"); //reset jumped to GPIO 16 = D0
+
+	takeReadings(); //get readings from sensors
 
 	connectWiFi();	  //connect to WiFi
 
-	takeReadings();
-
-	sendLocalMQTTData(); //get and publish data to local brokert
+	sendLocalMQTTData(); //get and publish data to local broker
 	sendAdafruitIoMQTTData(); //get and publish data to adafruit.io
-	//Serial.println("Nighty Night");
+
+	Serial.println("Nighty Night");
 
 	//go to sleep my little baby
 	// deepSleep time is defined in microseconds. Multiply seconds by 1e6
